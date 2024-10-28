@@ -19,7 +19,7 @@ const CustomBurgerButton = () => {
   const navigation = useNavigation<DrawerNavigatorProps>();
 
   return (
-    <TouchableOpacity onPress={() => navigation.toggleDrawer()}>
+    <TouchableOpacity onPress={() => navigation.toggleDrawer()} style={styles.burgerBtn}>
       <FontAwesomeIcon icon={faBars} size={24} color="#5F2DED" />
     </TouchableOpacity>
   );
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     width: 240,
     borderWidth: 1,
     borderColor: '0 0 1px 1px rgba(95, 45, 237, 0.2)',
-    backgroundColor: '#bfbfb',
+    backgroundColor: '#fbfbfb',
     ...Platform.select({
       ios: {
         shadowColor: '0 0 1px 1px rgba(95, 45, 237, 0.2)',
@@ -122,6 +122,10 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  burgerBtn:{
+    position: 'relative',
+    left: 10,
+  }
 });
 
 export default DrawerNavigator;
