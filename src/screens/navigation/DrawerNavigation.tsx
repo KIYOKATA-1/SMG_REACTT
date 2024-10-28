@@ -3,7 +3,7 @@ import { createDrawerNavigator, DrawerNavigationProp } from '@react-navigation/d
 import { useNavigation } from '@react-navigation/native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faUser, faClockRotateLeft, faCartShopping, faBars } from '@fortawesome/free-solid-svg-icons';
-import { TouchableOpacity, View, StyleSheet } from 'react-native';
+import { TouchableOpacity, View, StyleSheet, Platform } from 'react-native';
 import ProfileScreen from '../ProfileScreen';
 import TransactionsScreen from '../Transactions';
 import QuizzesScreen from '../Quizzes';
@@ -42,6 +42,9 @@ const DrawerNavigator = () => (
       headerStyle: {
         backgroundColor: '#fff',
       },
+      drawerStyle: [
+        styles.drawer, // Применяем стили для тени
+      ],
     })}
   >
     <Drawer.Screen
@@ -52,7 +55,7 @@ const DrawerNavigator = () => (
         drawerIcon: ({ size, color }) => (
           <FontAwesomeIcon icon={faUser} size={size} color={color} />
         ),
-        drawerItemStyle: styles.drawerItem, 
+        drawerItemStyle: styles.drawerItem,
         headerTintColor: 'transparent',
       }}
     />
@@ -64,7 +67,7 @@ const DrawerNavigator = () => (
         drawerIcon: ({ size, color }) => (
           <FontAwesomeIcon icon={faClockRotateLeft} size={size} color={color} />
         ),
-        drawerItemStyle: styles.drawerItem, 
+        drawerItemStyle: styles.drawerItem,
         headerTintColor: 'transparent',
       }}
     />
@@ -83,10 +86,10 @@ const DrawerNavigator = () => (
     <Drawer.Screen
       name="CourseDetails"
       component={CourseDetailsScreen}
-      options={{ drawerItemStyle: { display: 'none' },
-                headerTintColor: 'transparent',
-    }}
-      
+      options={{
+        drawerItemStyle: { display: 'none' },
+        headerTintColor: 'transparent',
+      }}
     />
     <Drawer.Screen
       name="ProductDetails"
@@ -99,8 +102,25 @@ const DrawerNavigator = () => (
 const styles = StyleSheet.create({
   drawerItem: {
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd', 
+    borderBottomColor: '#ddd',
     paddingVertical: 10,
+  },
+  drawer: {
+    width: 240,
+    borderWidth: 1,
+    borderColor: '0 0 1px 1px rgba(95, 45, 237, 0.2)',
+    backgroundColor: '#fff',
+    ...Platform.select({
+      ios: {
+        shadowColor: '0 0 1px 1px rgba(95, 45, 237, 0.2)',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 40,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
   },
 });
 

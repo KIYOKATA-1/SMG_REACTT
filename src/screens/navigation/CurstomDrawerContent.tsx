@@ -42,6 +42,8 @@ const styles = StyleSheet.create({
         resizeMode: 'contain',
         width: '70%',
         marginBottom: 20,
+        right: 20,
+        position: 'relative',
     },
     logoutButton: {
         backgroundColor: '#F2277E',
