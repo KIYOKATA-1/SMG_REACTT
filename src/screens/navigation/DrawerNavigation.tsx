@@ -43,7 +43,7 @@ const DrawerNavigator = () => (
         backgroundColor: '#fff',
       },
       drawerStyle: [
-        styles.drawer, // Применяем стили для тени
+        styles.drawer, 
       ],
     })}
   >
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     width: 240,
     borderWidth: 1,
     borderColor: '0 0 1px 1px rgba(95, 45, 237, 0.2)',
-    backgroundColor: '#fff',
+    backgroundColor: '#bfbfb',
     ...Platform.select({
       ios: {
         shadowColor: '0 0 1px 1px rgba(95, 45, 237, 0.2)',
