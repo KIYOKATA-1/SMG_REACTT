@@ -73,7 +73,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1}}>
           <Animated.View style={[LoginStyle.loginContainer, { opacity: fadeAnim }]}>
             <View style={LoginStyle.imageContainer}>
               <Image source={IMAGES.LOGIN_LOGO} style={LoginStyle.logo} />

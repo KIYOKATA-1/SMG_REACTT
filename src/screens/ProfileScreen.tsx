@@ -120,9 +120,8 @@ const ProfileScreen = () => {
         ) : (
           <Text>Загрузка данных пользователя...</Text>
         )}
-
+        <View style={ProfileStyle.sbjctList}>
         <FlatList
-          style={ProfileStyle.sbjctList}
           data={products}
           keyExtractor={(item) => item.id.toString()}
           ListHeaderComponent={<Text style={ProfileStyle.title}>Мои Продукты</Text>}
@@ -139,6 +138,7 @@ const ProfileScreen = () => {
             </TouchableOpacity>
           )}
         />
+        </View>
       </View>
     </SafeAreaView>
   );
