@@ -7,8 +7,8 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { ProfileStyle } from '../styles/Profile';
-import IMAGES from '../assets/img/image';
+import { ProfileStyle } from '../../styles/Profile';
+import IMAGES from '../../assets/img/image';
 
 const BACKEND_URL = 'https://api.smg.kz/en/api';
 

@@ -1,62 +1,52 @@
 import { StyleSheet } from "react-native";
+
 export const LoginStyle = StyleSheet.create({
   container: {
-    flex: 1, 
+    flex: 1,
+    backgroundColor: '#fff',
   },
   loginContainer: {
-    justifyContent: 'space-around',
-    backgroundColor: '#fff',
-    height: '100%',
-    width: '100%',
-    paddingVertical: 0,
-    alignItems: 'center',
-    display: 'flex',
-    position: 'relative',
-  },
-  imageContainer:{
-    position: 'relative',
-    display: 'flex',
-    width: '100%',
-    alignItems: 'center',
+    flex: 1,
     justifyContent: 'center',
-  },
-  logo:{
-    position: 'relative',
-    objectFit: 'contain',
-    width: 200,
-    height: 200,
-  },
-  inputContainer: {
-    gap: 30,
-    width: '100%',
-    height: 'auto',
-    gap: 50,
-    display: 'flex',
+    alignItems: 'center',
+    paddingVertical: 20,
     paddingHorizontal: 20,
   },
-  input:{
+  imageContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  logo: {
+    width: 200,
+    height: 200,
+    resizeMode: 'contain',
+  },
+  inputContainer: {
+    width: '100%',
+    marginBottom: 30,
+  },
+  input: {
     backgroundColor: '#F3F3F3',
     width: '100%',
-    borderWidth: 1,
     height: 50,
     borderRadius: 10,
-    paddingHorizontal: 30,
-    fontSize: 18,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#ddd',
   },
-  loginBtn:{
-    position: 'relative',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
+  loginBtn: {
     backgroundColor: '#000',
     borderRadius: 10,
     width: '70%',
     height: 50,
-    paddingHorizontal: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  btnText:{
+  btnText: {
     color: '#FFF',
     fontSize: 18,
     fontWeight: 'bold',
-  }
+  },
 });

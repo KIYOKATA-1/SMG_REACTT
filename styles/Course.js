@@ -80,6 +80,10 @@ export const CourseStyle = StyleSheet.create({
   },
   lessonItem: {
     marginBottom: 10,
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   lessonText: {
     fontSize: 18,
@@ -87,10 +91,7 @@ export const CourseStyle = StyleSheet.create({
     display: 'flex',
     color: '#000',
     transform: [{ rotate: '-90deg' }], 
-    alignSelf: 'center', 
-    position: 'absolute',
-    top: '45%',
-    left: -5,
+
 },
   contentContainer:{
     width: '100%',
@@ -131,15 +132,49 @@ export const CourseStyle = StyleSheet.create({
     marginLeft: 10,
   },
   lectureBtn:{
-    position: 'relative',
-    display: 'flex',
+    width: 250, 
+    height: 50,  
     flexDirection: 'row',
-    borderWidth: 1,
-    borderColor: '#000',
-    width:  '100%',
-    height: 40,
-    borderRadius: 4,
     alignItems: 'center',
+    justifyContent: 'flex-start',
+    borderWidth: 1,
+    borderRadius: 4,
     paddingHorizontal: 10,
+    backgroundColor: '#FFFFFF',
+  },
+  contentWrapper: {
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    padding: 10,
+    marginBottom: 8,
+    borderRadius: 8,
+    backgroundColor: '#F9F9FB',
+  },
+  completeButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    display: 'flex',
+    backgroundColor: 'transparent',
+    borderRadius: 30,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    width: 30,
+    height: 30,
+    borderWidth: 2,
+  },
+  completedIconWrapper: {
+    borderWidth: 2,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F3F4FD',
+    width: 30,
+    borderRadius: 30,
+    height: 30,
+    borderColor: '#00FF0A',
+  },
+  checked:{
+    color: '#00FF0A'
   }
+  
 });

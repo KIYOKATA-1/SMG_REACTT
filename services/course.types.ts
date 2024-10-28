@@ -44,7 +44,7 @@ export interface IUserCourse {
 
 export interface ICourseDetails {
   id: number;
-  teachers: ITeacher[]
+  teachers: ITeacher[];
   course_weeks?: ICourseWeek[];
   order: number;
   name: string;
@@ -55,8 +55,9 @@ export interface ICourseDetails {
   students: {
     count: number;
     avatars: string[];
-  }
+  };
 }
+
 
 export interface ITeacher {
   id: number;
