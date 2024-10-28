@@ -33,7 +33,7 @@ const ProfileScreen = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isMenuVisible, setMenuVisible] = useState(false); // Состояние для меню
+  const [isMenuVisible, setMenuVisible] = useState(false); 
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
@@ -46,7 +46,7 @@ const ProfileScreen = () => {
           return;
         }
 
-        await fetchData(token); // Загружаем данные с использованием токена
+        await fetchData(token); 
       } catch (error) {
         console.error('Ошибка при получении токена:', error);
         Alert.alert('Ошибка', 'Не удалось получить токен.');

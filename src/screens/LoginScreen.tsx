@@ -57,7 +57,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           duration: 500,
           useNativeDriver: true,
         }).start(() => {
-          navigation.replace('DrawerNavigator'); // Переход на DrawerNavigator
+          navigation.replace('DrawerNavigator'); 
         });
       } else {
         throw new Error('Не удалось получить токен.');

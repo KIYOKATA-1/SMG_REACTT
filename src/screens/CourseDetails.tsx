@@ -36,6 +36,7 @@ const CourseDetailsScreen = () => {
   const [selectedContent, setSelectedContent] = useState<ContentData | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<'syllabus' | 'unscheduledTest'>('syllabus');
+  
 
   const fetchCourse = useCallback(async () => {
     setLoading(true);
@@ -94,6 +95,12 @@ const CourseDetailsScreen = () => {
 
   return (
     <SafeAreaView style={CourseStyle.container}>
+      <View style={CourseStyle.courseHeader}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={CourseStyle.backBtn}>
+          <FontAwesomeIcon icon={faAngleLeft} size={24} color="#260094" />
+        </TouchableOpacity>
+        <Text style={CourseStyle.title}>{course.name}</Text>
+      </View>
 
       <View style={CourseStyle.tabsContainer}>
         <TouchableOpacity 

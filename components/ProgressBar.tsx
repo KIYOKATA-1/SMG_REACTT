@@ -4,7 +4,7 @@ import Svg, { Circle as SvgCircle } from 'react-native-svg';
 
 interface ProgressBarProps {
   size: number;
-  progress: number; // от 0 до 100
+  progress: number;
   strokeWidth?: number;
   textSize?: number;
 }
