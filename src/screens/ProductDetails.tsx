@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, SafeAreaView, Image, Linking } from 'react-native';
+import { 
+  View, Text, FlatList, ActivityIndicator, 
+  TouchableOpacity, SafeAreaView, Image, Linking 
+} from 'react-native';
 import { useNavigation, useRoute, RouteProp, NavigationProp } from '@react-navigation/native';
 import { CourseService } from '../../services/course.service';
 import { ICourseDetails } from '../../services/course.types';
@@ -57,6 +60,12 @@ const ProductScreen = () => {
     }
   };
 
+  const renderTeacherNames = (teachers: { first_name: string; last_name: string }[]) => {
+    return teachers
+      .map((teacher) => `${teacher.first_name} ${teacher.last_name}`)
+      .join(', ');
+  };
+
   if (loading) {
     return <ActivityIndicator size="large" style={ProductStyle.loader} />;
   }
@@ -68,7 +77,7 @@ const ProductScreen = () => {
           <TouchableOpacity onPress={() => navigation.goBack()} style={ProductStyle.backBtn}>
             <FontAwesomeIcon icon={faAngleLeft} size={24} color="#260094" />
           </TouchableOpacity>
-          <Text style={ProductStyle.topZoneTitle}>Course</Text>
+          <Text style={ProductStyle.topZoneTitle}>Courses</Text>
         </View>
 
         {courses.length === 0 ? (
@@ -86,13 +95,19 @@ const ProductScreen = () => {
             renderItem={({ item }) => (
               <TouchableOpacity onPress={() => navigateToCourse(item.id)} style={ProductStyle.product}>
                 <Text style={ProductStyle.productTitle}>{item.name}</Text>
+
+                {/* Выводим имена преподавателей */}
+                <Text style={{ fontSize: 16, fontWeight: '600', marginTop: 5 }}>
+                  Преподаватели: {renderTeacherNames(item.teachers) || 'Не указаны'}
+                </Text>
+
                 <View style={ProductStyle.productData}>
                   <Image
                     source={IMAGES.GROUP}
                     style={{ height: 40, width: 80, resizeMode: 'contain', marginVertical: 5 }}
                   />
                   <Text style={{ fontSize: 14, fontWeight: 'thin' }}>
-                    + {item.students?.count || 0} студентов
+                    + {item.students.count} студентов
                   </Text>
                 </View>
               </TouchableOpacity>

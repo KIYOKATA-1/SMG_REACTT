@@ -95,7 +95,6 @@ const CourseDetailsScreen = () => {
   return (
     <SafeAreaView style={CourseStyle.container}>
 
-
       <View style={CourseStyle.tabsContainer}>
         <TouchableOpacity 
           style={[
