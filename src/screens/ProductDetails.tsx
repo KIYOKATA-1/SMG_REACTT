@@ -75,7 +75,7 @@ const ProductScreen = () => {
       <View style={ProductStyle.courseContainer}>
         <View style={ProductStyle.topZone}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={ProductStyle.backBtn}>
-            <FontAwesomeIcon icon={faAngleLeft} size={24} color="#260094" />
+            <FontAwesomeIcon icon={faAngleLeft} size={24} color="#5F2DED" />
           </TouchableOpacity>
           <Text style={ProductStyle.topZoneTitle}>Courses</Text>
         </View>
@@ -96,9 +96,8 @@ const ProductScreen = () => {
               <TouchableOpacity onPress={() => navigateToCourse(item.id)} style={ProductStyle.product}>
                 <Text style={ProductStyle.productTitle}>{item.name}</Text>
 
-                {/* Выводим имена преподавателей */}
-                <Text style={{ fontSize: 16, fontWeight: '600', marginTop: 5 }}>
-                  Преподаватели: {renderTeacherNames(item.teachers) || 'Не указаны'}
+                <Text style={{ fontSize: 14, fontWeight: 'thin', marginTop: 5 }}>
+                  Куратор - {renderTeacherNames(item.teachers) || 'Не указаны'}
                 </Text>
 
                 <View style={ProductStyle.productData}>

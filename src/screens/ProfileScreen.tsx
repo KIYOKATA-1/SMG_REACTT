@@ -133,8 +133,8 @@ const ProfileScreen = () => {
             >
                 <Text style={ProfileStyle.course}>{item.name}</Text>
                 <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10}}>
-                  <Image source={IMAGES.GROUP} style={{height: 40, width: 80, objectFit: 'contain',position: 'relative', marginVertical: 5,}}/>
-                  <Text style={{fontSize: 12, fontWeight: 'thin'}}>+ 25 студентов</Text>
+                  <Image source={IMAGES.GROUP} style={ProfileStyle.groupImage}/>
+                  <Text style={{fontSize: 14, fontWeight: 'thin', color: '#000'}}>+ 25 студентов</Text>
                 </View>
             </TouchableOpacity>
           )}

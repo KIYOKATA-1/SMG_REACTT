@@ -1,21 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  ScrollView, 
-  ActivityIndicator, 
-  Alert, 
-  SafeAreaView, 
-  Modal 
-} from 'react-native';
-import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
+import { View, Text, ScrollView, SafeAreaView, Modal, ActivityIndicator, Alert } from 'react-native';
+import { useRoute, RouteProp } from '@react-navigation/native';
 import { CourseService } from '../../services/course.service';
 import { ICourseDetails, ContentData } from '../../services/course.types';
 import { CourseStyle } from '../../styles/Course';
-import { WebView } from 'react-native-webview';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faAngleLeft } from '@fortawesome/free-solid-svg-icons';
 import { useSession } from '../../lib/useSession';
 import Week from '../../components/Week';
 
@@ -25,18 +13,15 @@ type RootStackParamList = {
 
 type CourseDetailsRouteProp = RouteProp<RootStackParamList, 'CourseDetails'>;
 
-const CourseDetailsScreen = () => {
+const CourseDetailsScreen: React.FC = () => {
   const route = useRoute<CourseDetailsRouteProp>();
-  const navigation = useNavigation();
   const { courseId } = route.params;
-
   const { getSession } = useSession();
+
   const [course, setCourse] = useState<ICourseDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedContent, setSelectedContent] = useState<ContentData | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [activeTab, setActiveTab] = useState<'syllabus' | 'unscheduledTest'>('syllabus');
-  
 
   const fetchCourse = useCallback(async () => {
     setLoading(true);
@@ -47,8 +32,7 @@ const CourseDetailsScreen = () => {
         return;
       }
 
-      const { key } = session;
-      const data = await CourseService.getCourseById(key, courseId.toString());
+      const data = await CourseService.getCourseById(session.key, courseId.toString());
       setCourse(data);
     } catch (error) {
       console.error('Ошибка при загрузке курса:', error);
@@ -69,10 +53,15 @@ const CourseDetailsScreen = () => {
 
   const renderSyllabus = () => (
     <ScrollView>
-      {(course?.course_weeks ?? []).map((week) => (
-        <Week key={week.id} week={week} courseId={courseId} openContent={openContent} />
-      ))}
-    </ScrollView>
+  {course?.course_weeks?.map((week) => (
+    <Week 
+      key={week.id || week.week_number} 
+      week={week} 
+      courseId={courseId} 
+    />
+  ))}
+</ScrollView>
+
   );
 
   if (loading) {
@@ -95,54 +84,19 @@ const CourseDetailsScreen = () => {
 
   return (
     <SafeAreaView style={CourseStyle.container}>
-      <View style={CourseStyle.courseHeader}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={CourseStyle.backBtn}>
-          <FontAwesomeIcon icon={faAngleLeft} size={24} color="#260094" />
-        </TouchableOpacity>
-        <Text style={CourseStyle.title}>{course.name}</Text>
-      </View>
-
-      <View style={CourseStyle.tabsContainer}>
-        <TouchableOpacity 
-          style={[
-            CourseStyle.tabButton, 
-            activeTab === 'syllabus' && CourseStyle.activeTab
-          ]}
-          onPress={() => setActiveTab('syllabus')}
-        >
-          <Text style={CourseStyle.tabText}>Силлабус</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[
-            CourseStyle.tabButton, 
-            activeTab === 'unscheduledTest' && CourseStyle.activeTab
-          ]}
-          onPress={() => setActiveTab('unscheduledTest')}
-        >
-          <Text style={CourseStyle.tabText}>Внеплановый тест</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={CourseStyle.contentContainer}>
-        {activeTab === 'syllabus' ? renderSyllabus() : <Text>Тесты недоступны</Text>}
-      </View>
-
-      <Modal 
-        visible={isModalVisible} 
-        animationType="slide" 
+      {renderSyllabus()}
+      <Modal
+        visible={isModalVisible}
+        animationType="slide"
         onRequestClose={() => setIsModalVisible(false)}
       >
         <SafeAreaView style={{ flex: 1 }}>
-          <View style={{ flex: 1, paddingVertical: 20 }}>
-            <TouchableOpacity onPress={() => setIsModalVisible(false)} style={CourseStyle.backBtn}>
-              <FontAwesomeIcon icon={faAngleLeft} size={24} color="#260094" />
-            </TouchableOpacity>
-            <WebView
-              source={{ uri: selectedContent?.file || '' }}
-              style={{ flex: 1 }}
-              onError={() => Alert.alert('Ошибка', 'Не удалось загрузить контент.')}
-            />
-          </View>
+          <ScrollView contentContainerStyle={{ flex: 1, padding: 20 }}>
+            <Text style={{ fontSize: 18, marginBottom: 20 }}>
+              {selectedContent?.name}
+            </Text>
+            <Text>{selectedContent?.description}</Text>
+          </ScrollView>
         </SafeAreaView>
       </Modal>
     </SafeAreaView>

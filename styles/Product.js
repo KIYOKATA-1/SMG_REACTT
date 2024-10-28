@@ -2,10 +2,11 @@ import { StyleSheet } from "react-native";
 export const ProductStyle = StyleSheet.create({
   container: {
     flex: 1, 
+    backgroundColor: '#fff'
   },
   courseContainer: {
     justifyContent: 'start',
-    backgroundColor: '#F0F0F5',
+    backgroundColor: '#fff',
     height: '100%',
     width: '100%',
     alignItems: 'start',
@@ -39,13 +40,13 @@ export const ProductStyle = StyleSheet.create({
   product:{
     display: 'flex',
     padding: 10,
-    borderWidth: 2,
+    borderWidth: 1,
     width: '100%',
     height: 'auto',
-    borderColor: '#260094',
+    borderColor: '0 0 1px 1px rgba(95, 45, 237, 0.2)',
     alignItems: 'flex-start',
     marginBottom: 10,
-    backgroundColor: '#fff',
+    backgroundColor: '#F0F0F5',
     borderRadius: 15,
     shadowColor: '#000',
     shadowOffset: { width: 2, height: 2 },
@@ -55,7 +56,7 @@ export const ProductStyle = StyleSheet.create({
   productTitle:{
     fontSize: 16, 
     fontWeight: 'bold', 
-    color: '#260094'
+    color: '#000'
   },
   productData:{
     display: 'flex',
@@ -79,13 +80,13 @@ export const ProductStyle = StyleSheet.create({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    borderColor: '#260094'
+    borderColor: '#5F2DED'
   },
   topZoneTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     textTransform: 'uppercase',
-    color: '#260094'
+    color: '#5F2DED'
   },
   message:{
     display: 'flex', 
@@ -100,7 +101,7 @@ export const ProductStyle = StyleSheet.create({
     gap: 10,
     borderTopRightRadius: 15,
     borderBottomRightRadius: 15,
-    borderColor: '#260094', 
+    borderColor: '#5F2DED', 
     borderLeftColor: 'red',
     alignItems: 'center',
     backgroundColor: '#fff', 

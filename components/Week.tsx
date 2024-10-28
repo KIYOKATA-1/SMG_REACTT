@@ -1,23 +1,25 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, LayoutAnimation, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, LayoutAnimation, Animated, Modal, Linking, SafeAreaView } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faFilePdf, faFilm, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { faFilm, faFilePdf, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { ContentData, ICourseWeek } from '../services/course.types';
 import { CourseStyle } from '../styles/Course';
 import { useSession } from '../lib/useSession';
 import { CourseService } from '../services/course.service';
 import ProgressBar from '../components/ProgressBar';
+import VideoPlayer from './VideoPlayer'; 
 
 interface WeekProps {
   week: ICourseWeek;
   courseId: number;
-  openContent: (content: ContentData) => void;
 }
 
-const Week: React.FC<WeekProps> = ({ week, courseId, openContent }) => {
+const Week: React.FC<WeekProps> = ({ week, courseId }) => {
   const { getSession } = useSession();
   const [expanded, setExpanded] = useState(false);
   const [completedLectures, setCompletedLectures] = useState<Set<number>>(new Set());
+  const [selectedVideo, setSelectedVideo] = useState<ContentData | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false); 
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const toggleExpand = useCallback(() => {
@@ -65,11 +67,28 @@ const Week: React.FC<WeekProps> = ({ week, courseId, openContent }) => {
     }).start();
   }, []);
 
+  const openVideo = (video: ContentData) => {
+    setSelectedVideo(video);
+    setIsModalVisible(true);
+  };
+
+  const closeVideo = () => {
+    setSelectedVideo(null);
+    setIsModalVisible(false);
+  };
+
+  const openPDF = (file: string | null) => {
+    if (file) {
+      Linking.openURL(file).catch((err) => console.error('Ошибка открытия файла:', err));
+    }
+  };
+
   return (
-    <Animated.View style={[CourseStyle.weekContainer, { opacity: fadeAnim }]}>
+    <SafeAreaView style={{flex: 1, width: '100%', display: 'flex', justifyContent: 'center', alignItems:'center', paddingHorizontal: 20,}}>
+          <Animated.View style={[CourseStyle.weekContainer, { opacity: fadeAnim }]}>
       <TouchableOpacity style={CourseStyle.weekHeader} onPress={toggleExpand}>
         <Text style={CourseStyle.weekText}>{week.name}</Text>
-        <ProgressBar size={50} progress={week.user_week_completion || 0} textSize={12} />
+        <ProgressBar size={250} progress={week.user_week_completion || 0} textSize={12} />
       </TouchableOpacity>
 
       {expanded && (
@@ -77,14 +96,11 @@ const Week: React.FC<WeekProps> = ({ week, courseId, openContent }) => {
           {week.lessons_data.map((lesson, index) => (
             <Animated.View key={lesson.id} style={[CourseStyle.lessonItem, { opacity: fadeAnim }]}>
               <Text style={CourseStyle.lessonText}>{index + 1} урок</Text>
-              <View style={{ flex: 1, gap: 20, alignItems: 'baseline' }}>
+              <View style={{ flex: 1, gap: 20, alignItems: 'center' }}>
                 {lesson.lectures_data.map((lecture) => (
                   <View key={lecture.id} style={CourseStyle.contentWrapper}>
                     <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-                      <TouchableOpacity
-                        onPress={() => openContent(lecture)}
-                        style={CourseStyle.lectureBtn}
-                      >
+                      <TouchableOpacity onPress={() => openPDF(lecture.file)} style={CourseStyle.lectureBtn}>
                         <FontAwesomeIcon icon={faFilePdf} size={18} color="#000" />
                         <Text style={CourseStyle.contentText}>{lecture.name}</Text>
                       </TouchableOpacity>
@@ -93,7 +109,6 @@ const Week: React.FC<WeekProps> = ({ week, courseId, openContent }) => {
                           onPress={() => markAsCompleted(lecture)}
                           style={CourseStyle.completeButton}
                         >
-                          <Text></Text>
                         </TouchableOpacity>
                       ) : (
                         <View style={CourseStyle.completedIconWrapper}>
@@ -107,10 +122,7 @@ const Week: React.FC<WeekProps> = ({ week, courseId, openContent }) => {
                 {lesson.video_lessons_data.map((video) => (
                   <View key={video.id} style={CourseStyle.contentWrapper}>
                     <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-                      <TouchableOpacity
-                        onPress={() => openContent(video)}
-                        style={CourseStyle.lectureBtn}
-                      >
+                      <TouchableOpacity onPress={() => openVideo(video)} style={CourseStyle.lectureBtn}>
                         <FontAwesomeIcon icon={faFilm} size={18} color="#000" />
                         <Text style={CourseStyle.contentText}>{video.name}</Text>
                       </TouchableOpacity>
@@ -119,7 +131,6 @@ const Week: React.FC<WeekProps> = ({ week, courseId, openContent }) => {
                           onPress={() => markAsCompleted(video)}
                           style={CourseStyle.completeButton}
                         >
-                          <Text></Text>
                         </TouchableOpacity>
                       ) : (
                         <View style={CourseStyle.completedIconWrapper}>
@@ -134,7 +145,23 @@ const Week: React.FC<WeekProps> = ({ week, courseId, openContent }) => {
           ))}
         </Animated.View>
       )}
+
+      {selectedVideo && (
+        <Modal visible={isModalVisible} animationType="slide" onRequestClose={closeVideo}>
+          <VideoPlayer
+            videoData={{
+              video_480: selectedVideo.video_480 || '',
+              video_720: selectedVideo.video_720 || '',
+              video_1080: selectedVideo.video_1080 || '',
+            }}
+            videoName={selectedVideo.name}
+            description={selectedVideo.description || ''}
+            onComplete={closeVideo}
+          />
+        </Modal>
+      )}
     </Animated.View>
+    </SafeAreaView>
   );
 };
 

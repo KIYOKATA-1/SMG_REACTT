@@ -1,25 +1,20 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Animated, StyleSheet } from 'react-native';
-import Svg, { Circle as SvgCircle } from 'react-native-svg';
 
 interface ProgressBarProps {
   size: number;
   progress: number;
-  strokeWidth?: number;
+  height?: number;
   textSize?: number;
 }
-
-const AnimatedCircle = Animated.createAnimatedComponent(SvgCircle);
 
 const ProgressBar: React.FC<ProgressBarProps> = ({
   size,
   progress,
-  strokeWidth = 5,
+  height = 5,
   textSize = 16,
 }) => {
   const animatedValue = useRef(new Animated.Value(0)).current;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
 
   useEffect(() => {
     Animated.timing(animatedValue, {
@@ -29,54 +24,44 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
     }).start();
   }, [progress]);
 
-  const strokeDashoffset = animatedValue.interpolate({
+  const widthInterpolation = animatedValue.interpolate({
     inputRange: [0, 100],
-    outputRange: [circumference, 0],
+    outputRange: ['0%', '100%'],
   });
 
   return (
     <View style={styles.container}>
-      <Svg width={size} height={size}>
-        <SvgCircle
-          stroke="#ECEFF4"
-          fill="none"
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          strokeWidth={strokeWidth}
+      <View style={[styles.progressBarBackground, { width: size, height }]}>
+        <Animated.View
+          style={[
+            styles.progressBarForeground,
+            { width: widthInterpolation, height },
+          ]}
         />
-        <AnimatedCircle
-          stroke="#46BD84"
-          fill="none"
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          strokeWidth={strokeWidth}
-          strokeDasharray={`${circumference}, ${circumference}`}
-          strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
-        />
-      </Svg>
-      <View style={styles.textWrapper}>
-        <Text style={[styles.text, { fontSize: textSize }]}>
-          {Math.round(progress)}%
-        </Text>
       </View>
+      <Text style={[styles.progressText, { fontSize: textSize }]}>
+        {Math.round(progress)}%
+      </Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
-    position: 'relative',
+    gap: 10,
   },
-  textWrapper: {
-    position: 'absolute',
-    alignItems: 'center',
+  progressBarBackground: {
+    backgroundColor: '#ECEFF4',
+    borderRadius: 5,
+    overflow: 'hidden',
   },
-  text: {
+  progressBarForeground: {
+    backgroundColor: '#46BD84',
+    borderRadius: 5,
+  },
+  progressText: {
     fontWeight: 'bold',
     color: '#fff',
   },

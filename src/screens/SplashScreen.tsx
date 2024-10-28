@@ -6,8 +6,10 @@ const SplashScreenComponent: React.FC = () => {
   return (
     <View style={styles.container}>
       <Image source={IMAGES.LOGIN_LOGO} style={styles.image} />
+      <View>
       <Text style={styles.text}>Добро пожаловать!</Text>
-      <ActivityIndicator size="large" color="#7C77C6" style={{ marginTop: 20 }} />
+      <ActivityIndicator size="large" color="#000" style={{ marginTop: 20 }} />
+      </View>
     </View>
   );
 };
@@ -15,9 +17,10 @@ const SplashScreenComponent: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'space-around',
     alignItems: 'center',
     backgroundColor: '#ffffff',
+    paddingVertical: 100,
   },
   image: {
     width: 200,
@@ -28,7 +31,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#7C77C6',
+    color: '#000',
   },
 });
 

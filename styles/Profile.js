@@ -5,7 +5,7 @@ const { height, width } = Dimensions.get('window');
 export const ProfileStyle = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F7F7',
+    backgroundColor: '#FFF',
   },
   profileContainer: {
     flex: 1,
@@ -22,7 +22,7 @@ export const ProfileStyle = StyleSheet.create({
   userInfo: {
     width: '100%',
     borderRadius: 15,
-    backgroundColor: '#260094',
+    backgroundColor: '#5F2DED',
     padding: 15,
     alignItems: 'center',
     flexDirection: 'row',
@@ -49,13 +49,15 @@ export const ProfileStyle = StyleSheet.create({
   },
   sbjctList: {
     width: '100%',
-    backgroundColor: '#260094',
+    backgroundColor: '#5F2DED',
     borderRadius: 30,
     padding: 20,
-    maxHeight: height * 0.5, // Половина высоты экрана
+    maxHeight: height * 0.5, 
     shadowColor: '#000',
     shadowOffset: { width: 2, height: 2 },
     shadowOpacity: 0.25,
+    borderWidth: 1,
+    borderColor: '0 0 1px 1px rgba(95, 45, 237, 0.2)',
     shadowRadius: 3.84,
   },
   title: {
@@ -68,12 +70,21 @@ export const ProfileStyle = StyleSheet.create({
     padding: 10,
     width: '100%',
     marginBottom: 10,
-    backgroundColor: '#fff',
+    backgroundColor: '#F0F0F5',
     borderRadius: 15,
+    borderWidth: 1,
+    borderColor: '#000'
   },
   course: {
     fontSize: 16,
-    color: '#260094',
+    color: '#000',
     fontWeight: 'bold',
   },
+  groupImage:{
+    height: 40,
+     width: 80, 
+     objectFit: 'contain',
+     position: 'relative',
+    marginVertical: 5,
+  }
 });

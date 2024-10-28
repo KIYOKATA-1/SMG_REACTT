@@ -1,9 +1,9 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 export const CourseStyle = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F0F0F5',
+    backgroundColor: '#fff',
   },
   courseContainer: {
     flex: 1,
@@ -22,7 +22,7 @@ export const CourseStyle = StyleSheet.create({
     flex: 1, 
     justifyContent: 'center', 
     alignItems: 'center',
-    color: '#260094',
+    color: '#5F2DED',
 
   },
   tabsContainer: {
@@ -42,7 +42,7 @@ export const CourseStyle = StyleSheet.create({
     borderColor: 'transparent',
   },
   activeTab: {
-    borderColor: '#7C77C6',
+    borderColor: '#F2277E',
   },
   tabText: {
     fontSize: 18,
@@ -51,18 +51,16 @@ export const CourseStyle = StyleSheet.create({
   },
   weekContainer: {
     width: '100%',
-    marginBottom: 15,
-    backgroundColor: '#260094',
+    marginVertical: 20,
+    backgroundColor: '#5F2DED',
     borderRadius: 8,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
     overflow: 'hidden',
   },
   weekHeader: {
     padding: 15,
     backgroundColor: 'transparent',
-    borderBottomWidth: 2,
-    borderColor: '#260094',
+    borderBottomWidth: 1,
+    borderColor: '#5F2DED',
     alignItems: 'center',
     display: 'flex',
   },
@@ -70,12 +68,15 @@ export const CourseStyle = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: 'white',
+    marginBottom: 10,
   },
   lessonContainer: {
     padding: 15,
     backgroundColor: '#fff',
-    borderWidth: 2,
-    borderColor: '#260094',
+    borderWidth: 1,
+    borderBottomRightRadius: 8,
+    borderBottomLeftRadius: 8,
+    borderColor: '#5F2DED',
     display: 'flex',
   },
   lessonItem: {
@@ -89,6 +90,8 @@ export const CourseStyle = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     display: 'flex',
+    position: 'relative',
+    right: 10,
     color: '#000',
     transform: [{ rotate: '-90deg' }], 
 
@@ -107,48 +110,24 @@ export const CourseStyle = StyleSheet.create({
     color: '#000',
     marginLeft: 10,
   },
-  courseHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start', 
-    paddingHorizontal: 10, 
-    width: '100%',
-    height: 60,
-    borderBottomWidth: 2,
-    borderBottomColor: '#260094',
-    gap: 20,
-  },
-  
-  backBtn:{
-    position: 'relative', 
-    width: 40,
-    height: 40,
-    borderWidth: 2,
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderColor: '#260094',
-    borderRadius: 20,
-    marginLeft: 10,
-  },
+
   lectureBtn:{
     width: 250, 
     height: 50,  
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    borderWidth: 1,
     borderRadius: 4,
     paddingHorizontal: 10,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
   },
   contentWrapper: {
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: '0 0 1px 1px rgba(95, 45, 237, 0.2)',
     padding: 10,
     marginBottom: 8,
     borderRadius: 8,
-    backgroundColor: '#F9F9FB',
+    backgroundColor: '#F0F0F5',
   },
   completeButton: {
     paddingVertical: 6,
@@ -171,10 +150,22 @@ export const CourseStyle = StyleSheet.create({
     width: 30,
     borderRadius: 30,
     height: 30,
-    borderColor: '#00FF0A',
+    borderColor: '#46BD84',
   },
   checked:{
-    color: '#00FF0A'
-  }
-  
+    color: '#46BD84'
+  },
+  backBtn:{
+    position: 'relative', 
+    width: 150,
+    height: 40,
+    marginBottom: 10,
+    borderWidth: 2,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderColor: '#5F2DED',
+    borderRadius: 20,
+    marginLeft: 10,
+  },
 });
