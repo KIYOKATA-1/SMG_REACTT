@@ -22,7 +22,7 @@ export const CourseStyle = StyleSheet.create({
     flex: 1, 
     justifyContent: 'center', 
     alignItems: 'center',
-    color: '#5F2DED',
+    color: '#263546',
 
   },
   tabsContainer: {
@@ -52,7 +52,7 @@ export const CourseStyle = StyleSheet.create({
   weekContainer: {
     width: '100%',
     marginVertical: 20,
-    backgroundColor: '#5F2DED',
+    backgroundColor: '#202942',
     borderRadius: 8,
     overflow: 'hidden',
   },
@@ -60,7 +60,7 @@ export const CourseStyle = StyleSheet.create({
     padding: 15,
     backgroundColor: 'transparent',
     borderBottomWidth: 1,
-    borderColor: '#5F2DED',
+    borderColor: '#0C0E2B',
     alignItems: 'center',
     display: 'flex',
   },
@@ -76,7 +76,7 @@ export const CourseStyle = StyleSheet.create({
     borderWidth: 1,
     borderBottomRightRadius: 8,
     borderBottomLeftRadius: 8,
-    borderColor: '#5F2DED',
+    borderColor: '#0C0E2B',
     display: 'flex',
   },
   lessonItem: {
@@ -123,7 +123,7 @@ export const CourseStyle = StyleSheet.create({
   },
   contentWrapper: {
     borderWidth: 1,
-    borderColor: '0 0 1px 1px rgba(95, 45, 237, 0.2)',
+    borderColor: '#263546',
     padding: 10,
     marginBottom: 8,
     borderRadius: 8,
@@ -164,7 +164,7 @@ export const CourseStyle = StyleSheet.create({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    borderColor: '#5F2DED',
+    borderColor: '#0C0E2B',
     borderRadius: 20,
     marginLeft: 10,
   },

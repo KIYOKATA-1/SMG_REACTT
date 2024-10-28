@@ -24,7 +24,7 @@ export const ProductStyle = StyleSheet.create({
     flex: 1, 
     justifyContent: 'center', 
     alignItems: 'center',
-    color: '#7C77C6',
+    color: '#263546',
 
   },
   sbjctList:{
@@ -32,7 +32,7 @@ export const ProductStyle = StyleSheet.create({
     borderRadius: 30,
     borderTopRightRadius: 0,
     borderTopLeftRadius: 0,
-    borderTopColor: '#260094',
+    borderTopColor: '#202942',
     padding: 20,
     maxHeight: '100%', 
     borderTopWidth: 1,
@@ -80,13 +80,13 @@ export const ProductStyle = StyleSheet.create({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    borderColor: '#5F2DED'
+    borderColor: '#202942'
   },
   topZoneTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     textTransform: 'uppercase',
-    color: '#5F2DED'
+    color: '#202942'
   },
   message:{
     display: 'flex', 
@@ -101,7 +101,7 @@ export const ProductStyle = StyleSheet.create({
     gap: 10,
     borderTopRightRadius: 15,
     borderBottomRightRadius: 15,
-    borderColor: '#5F2DED', 
+    borderColor: '#202942', 
     borderLeftColor: 'red',
     alignItems: 'center',
     backgroundColor: '#fff', 

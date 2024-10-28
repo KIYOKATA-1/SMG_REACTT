@@ -67,7 +67,7 @@ const CourseDetailsScreen: React.FC = () => {
   if (loading) {
     return (
       <View style={CourseStyle.loader}>
-        <ActivityIndicator size="large" color="#7C77C6" />
+        <ActivityIndicator size="large" color="#263546" />
       </View>
     );
   }

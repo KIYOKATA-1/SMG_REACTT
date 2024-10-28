@@ -20,7 +20,7 @@ const CustomBurgerButton = () => {
 
   return (
     <TouchableOpacity onPress={() => navigation.toggleDrawer()} style={styles.burgerBtn}>
-      <FontAwesomeIcon icon={faBars} size={24} color="#5F2DED" />
+      <FontAwesomeIcon icon={faBars} size={24} color="#202942" />
     </TouchableOpacity>
   );
 };
@@ -31,7 +31,7 @@ const DrawerNavigator = () => (
     drawerContent={(props) => <CustomDrawerContent {...props} />}
     screenOptions={({ navigation }) => ({
       drawerHideStatusBarOnOpen: true,
-      drawerActiveTintColor: '#5F2DED',
+      drawerActiveTintColor: '#F2277E',
       drawerActiveBackgroundColor: 'transparent',
       drawerLabelStyle: { marginLeft: -20 },
       headerLeft: () => (

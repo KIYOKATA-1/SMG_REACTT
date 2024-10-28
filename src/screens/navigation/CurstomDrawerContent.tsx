@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
         position: 'relative',
     },
     logoutButton: {
-        backgroundColor: '#F2277E',
+        backgroundColor: '#263546',
         borderRadius: 8,
         width: 200,
         height: 50, 

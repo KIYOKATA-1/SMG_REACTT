@@ -75,7 +75,7 @@ const ProductScreen = () => {
       <View style={ProductStyle.courseContainer}>
         <View style={ProductStyle.topZone}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={ProductStyle.backBtn}>
-            <FontAwesomeIcon icon={faAngleLeft} size={24} color="#5F2DED" />
+            <FontAwesomeIcon icon={faAngleLeft} size={24} color="#202942" />
           </TouchableOpacity>
           <Text style={ProductStyle.topZoneTitle}>Courses</Text>
         </View>
