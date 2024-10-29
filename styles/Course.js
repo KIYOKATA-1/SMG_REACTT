@@ -10,20 +10,16 @@ export const CourseStyle = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     display: 'flex',
-
   },
   title: {
-    flex: 1, 
     fontSize: 24,
     fontWeight: 'bold',
   },
-  
   loader: {
-    flex: 1, 
-    justifyContent: 'center', 
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
     color: '#263546',
-
   },
   tabsContainer: {
     flexDirection: 'row',
@@ -32,7 +28,6 @@ export const CourseStyle = StyleSheet.create({
     marginBottom: 40,
     marginTop: 10,
     width: '100%',
-    display: 'flex',
   },
   tabButton: {
     flex: 1,
@@ -58,11 +53,9 @@ export const CourseStyle = StyleSheet.create({
   },
   weekHeader: {
     padding: 15,
-    backgroundColor: 'transparent',
     borderBottomWidth: 1,
     borderColor: '#0C0E2B',
     alignItems: 'center',
-    display: 'flex',
   },
   weekText: {
     fontSize: 20,
@@ -74,52 +67,23 @@ export const CourseStyle = StyleSheet.create({
     padding: 15,
     backgroundColor: '#fff',
     borderWidth: 1,
+    borderColor: '#0C0E2B',
     borderBottomRightRadius: 8,
     borderBottomLeftRadius: 8,
-    borderColor: '#0C0E2B',
-    display: 'flex',
   },
   lessonItem: {
     marginBottom: 10,
-    display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   lessonText: {
     fontSize: 18,
     fontWeight: 'bold',
-    display: 'flex',
     position: 'relative',
     right: 10,
     color: '#000',
-    transform: [{ rotate: '-90deg' }], 
-
-},
-  contentContainer:{
-    width: '100%',
-    display: 'flex',
-    justifyContent: 'center',
-    padding: 15,
-    borderRadius: 8,
-    display: 'flex',
-    justifyContent: 'space-between',
-  },
-  contentText: {
-    fontSize: 16,
-    color: '#000',
-    marginLeft: 10,
-  },
-
-  lectureBtn:{
-    width: 250, 
-    height: 50,  
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    borderRadius: 4,
-    paddingHorizontal: 10,
-    backgroundColor: 'transparent',
+    transform: [{ rotate: '-90deg' }],
   },
   contentWrapper: {
     borderWidth: 1,
@@ -129,39 +93,50 @@ export const CourseStyle = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#F0F0F5',
   },
-  completeButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    display: 'flex',
-    backgroundColor: 'transparent',
-    borderRadius: 30,
-    alignSelf: 'center',
+  buttonContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 10,
+    marginVertical: 5,
+    borderRadius: 8,
+    backgroundColor: '#f5f5f5',
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  buttonText: {
+    fontSize: 16,
+    color: '#000',
+    flex: 1,
+    marginLeft: 10,
+  },
+  indicatorWrapper: {
     width: 30,
     height: 30,
-    borderWidth: 2,
-  },
-  completedIconWrapper: {
-    borderWidth: 2,
-    display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F3F4FD',
-    width: 30,
-    borderRadius: 30,
-    height: 30,
-    borderColor: '#46BD84',
   },
-  checked:{
-    color: '#46BD84'
+  circle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#ddd',
   },
-  backBtn:{
-    position: 'relative', 
+  checked: {
+    color: '#46BD84',
+  },
+  pdfControls: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 10,
+  },
+  backBtn: {
     width: 150,
     height: 40,
     marginBottom: 10,
     borderWidth: 2,
-    display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     borderColor: '#0C0E2B',

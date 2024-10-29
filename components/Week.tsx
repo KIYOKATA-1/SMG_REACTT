@@ -1,13 +1,24 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, LayoutAnimation, Animated, Modal, Linking, SafeAreaView } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { 
+  View, Text, TouchableOpacity, LayoutAnimation, Animated, SafeAreaView, Modal, ScrollView 
+} from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faFilm, faFilePdf, faCheck } from '@fortawesome/free-solid-svg-icons';
-import { ContentData, ICourseWeek } from '../services/course.types';
+import { faFilm, faFilePdf, faCheck, faGraduationCap } from '@fortawesome/free-solid-svg-icons';
+import { ContentData, ICourseWeek, TestData } from '../services/course.types';
 import { CourseStyle } from '../styles/Course';
 import { useSession } from '../lib/useSession';
 import { CourseService } from '../services/course.service';
 import ProgressBar from '../components/ProgressBar';
-import VideoPlayer from './VideoPlayer'; 
+import VideoPlayer from './VideoPlayer';
+import { WebView } from 'react-native-webview';
+import { useNavigation } from '@react-navigation/native';
+import { DrawerNavigationProp } from '@react-navigation/drawer';
+
+type RootStackParamList = {
+  TestPage: { testId: number };
+};
+
+type NavigationProp = DrawerNavigationProp<RootStackParamList, 'TestPage'>;
 
 interface WeekProps {
   week: ICourseWeek;
@@ -16,11 +27,14 @@ interface WeekProps {
 
 const Week: React.FC<WeekProps> = ({ week, courseId }) => {
   const { getSession } = useSession();
+  const navigation = useNavigation<NavigationProp>();
   const [expanded, setExpanded] = useState(false);
   const [completedLectures, setCompletedLectures] = useState<Set<number>>(new Set());
   const [selectedVideo, setSelectedVideo] = useState<ContentData | null>(null);
-  const [isModalVisible, setIsModalVisible] = useState(false); 
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [selectedLecture, setSelectedLecture] = useState<ContentData | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isPDFVisible, setIsPDFVisible] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const toggleExpand = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -59,14 +73,6 @@ const Week: React.FC<WeekProps> = ({ week, courseId }) => {
     [getSession]
   );
 
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
   const openVideo = (video: ContentData) => {
     setSelectedVideo(video);
     setIsModalVisible(true);
@@ -77,90 +83,137 @@ const Week: React.FC<WeekProps> = ({ week, courseId }) => {
     setIsModalVisible(false);
   };
 
-  const openPDF = (file: string | null) => {
-    if (file) {
-      Linking.openURL(file).catch((err) => console.error('Ошибка открытия файла:', err));
+  const openPDF = (lecture: ContentData) => {
+    setSelectedLecture(lecture);
+    setIsPDFVisible(true);
+  };
+
+  const closePDF = () => {
+    setSelectedLecture(null);
+    setIsPDFVisible(false);
+  };
+
+  const finishPDF = () => {
+    if (selectedLecture) {
+      markAsCompleted(selectedLecture);
+    }
+    closePDF();
+  };
+
+  const openTest = (test: TestData) => {
+    if (test.id !== undefined) {
+      navigation.navigate('TestPage', { testId: test.id });
+    } else {
+      console.error('ID теста отсутствует');
     }
   };
 
   return (
-    <SafeAreaView style={{flex: 1, width: '100%', display: 'flex', justifyContent: 'center', alignItems:'center', paddingHorizontal: 20,}}>
-          <Animated.View style={[CourseStyle.weekContainer, { opacity: fadeAnim }]}>
-      <TouchableOpacity style={CourseStyle.weekHeader} onPress={toggleExpand}>
-        <Text style={CourseStyle.weekText}>{week.name}</Text>
-        <ProgressBar size={250} progress={week.user_week_completion || 0} textSize={12} />
-      </TouchableOpacity>
+    <SafeAreaView style={{ flex: 1, width: '100%', paddingHorizontal: 20 }}>
+      <ScrollView>
+        <Animated.View style={[CourseStyle.weekContainer, { opacity: fadeAnim }]}>
+          <TouchableOpacity style={CourseStyle.weekHeader} onPress={toggleExpand}>
+            <Text style={CourseStyle.weekText}>{week.name}</Text>
+            <ProgressBar size={250} progress={week.user_week_completion || 0} textSize={12} />
+          </TouchableOpacity>
 
-      {expanded && (
-        <Animated.View style={CourseStyle.lessonContainer}>
-          {week.lessons_data.map((lesson, index) => (
-            <Animated.View key={lesson.id} style={[CourseStyle.lessonItem, { opacity: fadeAnim }]}>
-              <Text style={CourseStyle.lessonText}>{index + 1} урок</Text>
-              <View style={{ flex: 1, gap: 20, alignItems: 'center' }}>
-                {lesson.lectures_data.map((lecture) => (
-                  <View key={lecture.id} style={CourseStyle.contentWrapper}>
-                    <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-                      <TouchableOpacity onPress={() => openPDF(lecture.file)} style={CourseStyle.lectureBtn}>
+          {expanded && (
+            <View style={CourseStyle.lessonContainer}>
+              {week.lessons_data.map((lesson, index) => (
+                <View key={lesson.id} style={CourseStyle.lessonItem}>
+                  <Text style={CourseStyle.lessonText}>{index + 1} урок</Text>
+                  <View style={{ flex: 1, gap: 20, alignItems: 'center' }}>
+                    {lesson.lectures_data.map((lecture) => (
+                      <TouchableOpacity
+                        key={lecture.id}
+                        onPress={() => openPDF(lecture)}
+                        style={CourseStyle.buttonContainer}
+                      >
                         <FontAwesomeIcon icon={faFilePdf} size={18} color="#000" />
-                        <Text style={CourseStyle.contentText}>{lecture.name}</Text>
-                      </TouchableOpacity>
-                      {!completedLectures.has(lecture.id) ? (
-                        <TouchableOpacity
-                          onPress={() => markAsCompleted(lecture)}
-                          style={CourseStyle.completeButton}
-                        >
-                        </TouchableOpacity>
-                      ) : (
-                        <View style={CourseStyle.completedIconWrapper}>
-                          <FontAwesomeIcon icon={faCheck} style={CourseStyle.checked} />
+                        <Text style={CourseStyle.buttonText}>{lecture.name}</Text>
+                        <View style={CourseStyle.indicatorWrapper}>
+                          {completedLectures.has(lecture.id) ? (
+                            <FontAwesomeIcon icon={faCheck} style={CourseStyle.checked} />
+                          ) : (
+                            <View style={CourseStyle.circle} />
+                          )}
                         </View>
-                      )}
-                    </View>
-                  </View>
-                ))}
+                      </TouchableOpacity>
+                    ))}
 
-                {lesson.video_lessons_data.map((video) => (
-                  <View key={video.id} style={CourseStyle.contentWrapper}>
-                    <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-                      <TouchableOpacity onPress={() => openVideo(video)} style={CourseStyle.lectureBtn}>
+                    {lesson.video_lessons_data.map((video) => (
+                      <TouchableOpacity
+                        key={video.id}
+                        onPress={() => openVideo(video)}
+                        style={CourseStyle.buttonContainer}
+                      >
                         <FontAwesomeIcon icon={faFilm} size={18} color="#000" />
-                        <Text style={CourseStyle.contentText}>{video.name}</Text>
-                      </TouchableOpacity>
-                      {!completedLectures.has(video.id) ? (
-                        <TouchableOpacity
-                          onPress={() => markAsCompleted(video)}
-                          style={CourseStyle.completeButton}
-                        >
-                        </TouchableOpacity>
-                      ) : (
-                        <View style={CourseStyle.completedIconWrapper}>
-                          <FontAwesomeIcon icon={faCheck} style={CourseStyle.checked} />
+                        <Text style={CourseStyle.buttonText}>{video.name}</Text>
+                        <View style={CourseStyle.indicatorWrapper}>
+                          {completedLectures.has(video.id) ? (
+                            <FontAwesomeIcon icon={faCheck} style={CourseStyle.checked} />
+                          ) : (
+                            <View style={CourseStyle.circle} />
+                          )}
                         </View>
-                      )}
-                    </View>
-                  </View>
-                ))}
-              </View>
-            </Animated.View>
-          ))}
-        </Animated.View>
-      )}
+                      </TouchableOpacity>
+                    ))}
 
-      {selectedVideo && (
-        <Modal visible={isModalVisible} animationType="slide" onRequestClose={closeVideo}>
-          <VideoPlayer
-            videoData={{
-              video_480: selectedVideo.video_480 || '',
-              video_720: selectedVideo.video_720 || '',
-              video_1080: selectedVideo.video_1080 || '',
-            }}
-            videoName={selectedVideo.name}
-            description={selectedVideo.description || ''}
-            onComplete={closeVideo}
-          />
-        </Modal>
-      )}
-    </Animated.View>
+                    {lesson.test_data.map((test) => (
+                      <TouchableOpacity
+                        key={test.id}
+                        onPress={() => openTest(test)}
+                        style={CourseStyle.buttonContainer}
+                      >
+                        <FontAwesomeIcon icon={faGraduationCap} size={18} color="#000" />
+                        <Text style={CourseStyle.buttonText}>{test.name}</Text>
+                        <View style={CourseStyle.indicatorWrapper}>
+                          {completedLectures.has(test.id ?? 0) ? (
+                            <FontAwesomeIcon icon={faCheck} style={CourseStyle.checked} />
+                          ) : (
+                            <View style={CourseStyle.circle} />
+                          )}
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {selectedVideo && (
+            <Modal visible={isModalVisible} animationType="slide" onRequestClose={closeVideo}>
+              <VideoPlayer
+                videoData={{
+                  video_480: selectedVideo.video_480 || '',
+                  video_720: selectedVideo.video_720 || '',
+                  video_1080: selectedVideo.video_1080 || '',
+                }}
+                videoName={selectedVideo.name}
+                description={selectedVideo.description || ''}
+                onComplete={closeVideo}
+              />
+            </Modal>
+          )}
+
+          {selectedLecture && (
+            <Modal visible={isPDFVisible} animationType="slide" onRequestClose={closePDF}>
+              <SafeAreaView style={{ flex: 1 }}>
+                <WebView source={{ uri: selectedLecture.file || '' }} />
+                <View style={CourseStyle.pdfControls}>
+                  <TouchableOpacity onPress={closePDF} style={CourseStyle.backBtn}>
+                    <Text>Назад</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={finishPDF} style={CourseStyle.backBtn}>
+                    <Text>Завершить</Text>
+                  </TouchableOpacity>
+                </View>
+              </SafeAreaView>
+            </Modal>
+          )}
+        </Animated.View>
+      </ScrollView>
     </SafeAreaView>
   );
 };

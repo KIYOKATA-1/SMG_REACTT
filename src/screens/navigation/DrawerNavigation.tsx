@@ -1,6 +1,7 @@
 import React from 'react';
 import { createDrawerNavigator, DrawerNavigationProp } from '@react-navigation/drawer';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation} from '@react-navigation/native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack'; 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faUser, faClockRotateLeft, faCartShopping, faBars } from '@fortawesome/free-solid-svg-icons';
 import { TouchableOpacity, View, StyleSheet, Platform } from 'react-native';
@@ -10,10 +11,21 @@ import QuizzesScreen from '../Quizzes';
 import CourseDetailsScreen from '../CourseDetails';
 import ProductScreen from '../ProductDetails';
 import CustomDrawerContent from './CurstomDrawerContent';
+import TestPage from '../../../components/TestPage';
 
-type DrawerNavigatorProps = DrawerNavigationProp<any>;
+type RootDrawerParamList = {
+  Profile: undefined;
+  Transactions: undefined;
+  Quizzes: undefined;
+  CourseDetails: undefined;
+  ProductDetails: undefined;
+  TestPage: { testId: number };
+};
 
-const Drawer = createDrawerNavigator();
+type DrawerNavigatorProps = DrawerNavigationProp<RootDrawerParamList>;
+type TestPageProps = NativeStackScreenProps<RootDrawerParamList, 'TestPage'>;
+
+const Drawer = createDrawerNavigator<RootDrawerParamList>();
 
 const CustomBurgerButton = () => {
   const navigation = useNavigation<DrawerNavigatorProps>();
@@ -29,7 +41,7 @@ const DrawerNavigator = () => (
   <Drawer.Navigator
     initialRouteName="Profile"
     drawerContent={(props) => <CustomDrawerContent {...props} />}
-    screenOptions={({ navigation }) => ({
+    screenOptions={{
       drawerHideStatusBarOnOpen: true,
       drawerActiveTintColor: '#F2277E',
       drawerActiveBackgroundColor: 'transparent',
@@ -42,10 +54,8 @@ const DrawerNavigator = () => (
       headerStyle: {
         backgroundColor: '#fff',
       },
-      drawerStyle: [
-        styles.drawer, 
-      ],
-    })}
+      drawerStyle: [styles.drawer],
+    }}
   >
     <Drawer.Screen
       name="Profile"
@@ -96,8 +106,15 @@ const DrawerNavigator = () => (
       component={ProductScreen}
       options={{ drawerItemStyle: { display: 'none' }, headerShown: false }}
     />
+    <Drawer.Screen
+      name="TestPage"
+      component={TestPageWrapper}
+      options={{ drawerItemStyle: { display: 'none' }, headerShown: false }}
+    />
   </Drawer.Navigator>
 );
+
+const TestPageWrapper: React.FC<TestPageProps> = (props) => <TestPage {...props} />;
 
 const styles = StyleSheet.create({
   drawerItem: {
@@ -122,10 +139,10 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  burgerBtn:{
+  burgerBtn: {
     position: 'relative',
     left: 10,
-  }
+  },
 });
 
 export default DrawerNavigator;

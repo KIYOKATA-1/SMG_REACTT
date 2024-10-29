@@ -13,7 +13,7 @@ interface VideoPlayerProps {
   onComplete: () => void;
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoData, videoName, description, onComplete }) => {
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoData, onComplete }) => {
   const videoRef = useRef<Video>(null); 
   const [quality, setQuality] = useState<'480' | '720' | '1080'>('1080');
   const [isLoading, setIsLoading] = useState(true);
