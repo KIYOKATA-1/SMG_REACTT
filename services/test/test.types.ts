@@ -1,4 +1,4 @@
-import {TestData} from "@/services/course/course.types";
+import {TestData} from "../course.types";
 
 export interface TestWrapper {
   count: number;
