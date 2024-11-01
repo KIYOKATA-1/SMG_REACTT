@@ -53,16 +53,17 @@ export type DragDropAnswers = { [category: string]: string[] };
 export interface SingleSelectQuestion extends BaseQuestion {
   question_type: QuestionType.SingleSelect;
   options: {
-    options: { text: string; img: string }[];
+    options: { text: string; img?: string }[]; // img необязательный
   };
-  answer: { answer: { text: string; img: string } } | null;
+  answer: { answer: { text: string; img?: string } } | null;
 }
 
 export interface MultipleSelectQuestion extends BaseQuestion {
   question_type: QuestionType.MultipleSelect;
-  options: { options: { text: string; img: string }[] };
-  answer: { answer: { text: string; img: string }[] } | null;
+  options: { options: { text: string; img?: string }[] }; // img необязательный
+  answer: { answer: { text: string; img?: string }[] } | null;
 }
+
 
 export interface MatchQuestion extends BaseQuestion {
   question_type: QuestionType.Match;
@@ -127,12 +128,13 @@ export interface ITestQuestions {
 }
 
 export type UserAnswer =
-  { answer: { text: string; img: string } }
-  | { answer: { text: string; img: string }[] }
-  | { answer: string }  // for SingleSelect, ShortOpen, OpenParagraph, QuantitativeCharacteristics answers
-  | { answer: string[] }  // for MultipleSelect answers
-  | { [key: string]: string }  // for Match type answers
-  | { [key: string]: string[] };  // for DragDrop type answers
+  { answer: { text: string; img?: string } }  // img теперь необязательный
+  | { answer: { text: string; img?: string }[] }
+  | { answer: string }  // для SingleSelect, ShortOpen, OpenParagraph, QuantitativeCharacteristics
+  | { answer: string[] }  // для MultipleSelect
+  | { [key: string]: string }  // для Match
+  | { [key: string]: string[] };  // для DragDrop
+
 
 
 export interface IUserTestResults {

@@ -1,17 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  Button, 
-  ActivityIndicator, 
-  SafeAreaView, 
-  Alert, 
-  StyleSheet 
-} from 'react-native';
+import { View, Text, Button, ActivityIndicator, SafeAreaView, Alert, StyleSheet } from 'react-native';
 import { TestService } from '../services/test/test.service';
 import { TestWrapper, UserAnswer } from '../services/test/test.types';
 import { useSession } from '../lib/useSession';
-import QuestionRenderer from '../src/screens/QuestionRenderer';
+import QuestionRenderer from '../src/screens/SingleAnswer';
 
 interface TestPageProps {
   route: { params: { testId: number } };
@@ -23,72 +15,70 @@ const TestPage: React.FC<TestPageProps> = ({ route, navigation }) => {
   const { getSession } = useSession();
   const [testData, setTestData] = useState<TestWrapper | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userTestId, setUserTestId] = useState<number | null>(null);
-  const [answers, setAnswers] = useState<Record<number, UserAnswer>>({});
-
-  const fetchQuestions = useCallback(async () => {
-    const session = await getSession();
-    if (!session) {
-      Alert.alert('Ошибка', 'Не удалось получить сессию пользователя.');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await TestService.startTest(session.key, testId);
-      setUserTestId(response.user_test_id);
-
-      const questions = await TestService.getTestQuestions(session.key, response.user_test_id.toString(), null);
-      setTestData(questions);
-    } catch (error) {
-      Alert.alert('Ошибка', 'Не удалось загрузить тест.');
-    } finally {
-      setLoading(false);
-    }
-  }, [getSession, testId]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [session, setSession] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchQuestions();
-  }, [fetchQuestions]);
-
-  const handleAnswer = async (answer: UserAnswer) => {
-    if (!testData || !userTestId) return;
-
-    const session = await getSession();
-    if (!session) {
-      Alert.alert('Ошибка', 'Не удалось получить сессию пользователя.');
-      return;
-    }
-
-    try {
-      const currentQuestion = testData.results[currentQuestionIndex];
-
-      setAnswers((prevAnswers) => ({
-        ...prevAnswers,
-        [currentQuestion.id]: answer,
-      }));
-
-      await TestService.answerTestQuestion(session.key, currentQuestion.id, answer);
-
-      const nextIndex = currentQuestionIndex + 1;
-      if (nextIndex < testData.results.length) {
-        setCurrentQuestionIndex(nextIndex);
-      } else {
-        await TestService.endTest(session.key, userTestId);
-        Alert.alert('Тест завершён', 'Вы успешно завершили тест.');
-        navigation.goBack();
+    const fetchQuestions = async () => {
+      const sessionData = await getSession();
+      if (!sessionData) {
+        Alert.alert('Ошибка', 'Не удалось получить сессию пользователя.');
+        setLoading(false);
+        return;
       }
-    } catch (error) {
-      Alert.alert('Ошибка', 'Не удалось отправить ответ.');
-    }
-  };
+      setSession(sessionData.key);
 
-  const handlePrevious = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
-    }
-  };
+      try {
+        const response = await TestService.startTest(sessionData.key, testId);
+        setUserTestId(response.user_test_id);
+
+        const questions = await TestService.getTestQuestions(sessionData.key, response.user_test_id.toString(), null);
+        setTestData(questions);
+      } catch (error) {
+        Alert.alert('Ошибка', 'Не удалось загрузить тест.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuestions();
+  }, [getSession, testId]);
+
+  const handleAnswerSubmission = useCallback(
+    async (answer: UserAnswer) => {
+      if (!session || !testData || !userTestId) return;
+
+      try {
+        const currentQuestion = testData.results[currentQuestionIndex];
+        await TestService.answerTestQuestion(session, currentQuestion.id, answer);
+
+        setTestData((prevData) => {
+          if (!prevData) return prevData;
+
+          const updatedResults = prevData.results.map((q) =>
+            q.id === currentQuestion.id
+              ? { ...q, is_answered: true, user_answer: answer }
+              : q
+          );
+
+          return { ...prevData, results: updatedResults };
+        });
+
+        if (currentQuestionIndex < testData.results.length - 1) {
+          setCurrentQuestionIndex(currentQuestionIndex + 1);
+        } else {
+          await TestService.endTest(session, userTestId);
+          Alert.alert('Тест завершён', 'Вы успешно завершили тест.');
+          navigation.goBack();
+        }
+      } catch (error) {
+        console.error("Ошибка при отправке ответа:", error);
+        Alert.alert('Ошибка', 'Не удалось отправить ответ.');
+      }
+    },
+    [session, testData, currentQuestionIndex, userTestId, navigation]
+  );
 
   if (loading) {
     return (
@@ -109,16 +99,15 @@ const TestPage: React.FC<TestPageProps> = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>
-        Вопрос {currentQuestionIndex + 1} из {testData.count}
-      </Text>
-      <QuestionRenderer 
-        question={testData.results[currentQuestionIndex]} 
-        onAnswer={handleAnswer} 
+      <Text style={styles.header}>Вопрос {currentQuestionIndex + 1} из {testData.count}</Text>
+      <QuestionRenderer
+        question={testData.results[currentQuestionIndex]}
+        onAnswer={handleAnswerSubmission}
+        isLastQuestion={currentQuestionIndex === testData.results.length - 1}
       />
       <View style={styles.navigationButtons}>
         {currentQuestionIndex > 0 && (
-          <Button title="Назад" onPress={handlePrevious} />
+          <Button title="Назад" onPress={() => setCurrentQuestionIndex(currentQuestionIndex - 1)} />
         )}
       </View>
     </SafeAreaView>

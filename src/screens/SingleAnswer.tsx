@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, Button, TouchableOpacity, FlatList, StyleSheet, Alert } from 'react-native';
+import { View, Text, Button, Alert, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { ITestQuestions, UserAnswer, QuestionType, TestQuestion } from '../../services/test/test.types';
 
 interface QuestionRendererProps {
   question: ITestQuestions;
   onAnswer: (answer: UserAnswer) => void;
+  isLastQuestion: boolean;
 }
 
-const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer }) => {
-  const [selectedAnswer, setSelectedAnswer] = useState<UserAnswer | null>(null);
+const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer, isLastQuestion }) => {
+  const [selectedAnswer, setSelectedAnswer] = useState<{ text: string; img: string } | null>(null);
 
-  const handleAnswerSelection = (answer: string) => {
-    const userAnswer: UserAnswer = { answer };
-    setSelectedAnswer(userAnswer);
+  const handleSelect = (option: { text: string; img?: string }) => {
+    setSelectedAnswer({ text: option.text, img: option.img || '' });
   };
 
   const getOptions = (questionData: TestQuestion) => {
@@ -40,9 +40,9 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer 
           <TouchableOpacity
             style={[
               styles.option,
-              selectedAnswer?.answer === item.text ? styles.selectedOption : {},
+              selectedAnswer?.text === item.text ? styles.selectedOption : {},
             ]}
-            onPress={() => handleAnswerSelection(item.text)}
+            onPress={() => handleSelect(item)}
           >
             <Text style={styles.optionText}>{item.text}</Text>
           </TouchableOpacity>
@@ -56,14 +56,14 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer 
       Alert.alert('Ошибка', 'Выберите ответ перед отправкой.');
       return;
     }
-    onAnswer(selectedAnswer);
+    onAnswer({ answer: { text: selectedAnswer.text, img: selectedAnswer.img } });
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.questionText}>{question.test_question_data.description.text}</Text>
       {renderOptions()}
-      <Button title="Ответить" onPress={submitAnswer} />
+      <Button title={isLastQuestion ? "Завершить" : "Ответить"} onPress={submitAnswer} />
     </View>
   );
 };
