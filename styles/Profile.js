@@ -9,8 +9,8 @@ export const ProfileStyle = StyleSheet.create({
   },
   profileContainer: {
     flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
+    justifyContent: 'space-around',
+    alignItems: 'center',
     padding: 20,
     gap: 20,
   },
@@ -20,8 +20,8 @@ export const ProfileStyle = StyleSheet.create({
     alignItems: 'center',
   },
   userInfo: {
-    width: '100%',
-    borderRadius: 15,
+    width: '90%',
+    borderRadius: 18,
     backgroundColor: '#202942',
     padding: 15,
     alignItems: 'center',
@@ -51,16 +51,14 @@ export const ProfileStyle = StyleSheet.create({
   },
   sbjctList: {
     width: '100%',
-    backgroundColor: '#202942',
-    borderRadius: 30,
-    padding: 20,
+    backgroundColor: 'transparent',
+    borderRadius: 18,
+    padding: 0,
     height: '100%',
-    maxHeight: height * 0.5, 
+    maxHeight: height * 0.65, 
     shadowColor: '#000',
     shadowOffset: { width: 2, height: 2 },
     shadowOpacity: 0.6,
-    borderWidth: 1,
-    borderColor: '0 0 1px 1px rgba(95, 45, 237, 0.2)',
     shadowRadius: 5.84,
   },
   title: {
@@ -72,15 +70,15 @@ export const ProfileStyle = StyleSheet.create({
   productItem: {
     padding: 10,
     width: '100%',
-    marginBottom: 10,
-    backgroundColor: '#F0F0F5',
-    borderRadius: 15,
+    marginVertical: 20,
+    backgroundColor: '#202942',
+    borderRadius: 9,
     borderWidth: 1,
     borderColor: '#000'
   },
   course: {
     fontSize: 16,
-    color: '#000',
+    color: '#fff',
     fontWeight: 'bold',
   },
   groupImage:{

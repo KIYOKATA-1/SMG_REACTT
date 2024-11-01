@@ -124,7 +124,6 @@ const ProfileScreen = () => {
         <FlatList
           data={products}
           keyExtractor={(item) => item.id.toString()}
-          ListHeaderComponent={<Text style={ProfileStyle.title}>Мои Продукты</Text>}
           renderItem={({ item }) => (
             <TouchableOpacity
               style={ProfileStyle.productItem}
@@ -133,7 +132,7 @@ const ProfileScreen = () => {
                 <Text style={ProfileStyle.course}>{item.name}</Text>
                 <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10}}>
                   <Image source={IMAGES.GROUP} style={ProfileStyle.groupImage}/>
-                  <Text style={{fontSize: 14, fontWeight: 'thin', color: '#000'}}>+ 25 студентов</Text>
+                  <Text style={{fontSize: 14, fontWeight: 'thin', color: '#fff'}}>+ 25 студентов</Text>
                 </View>
             </TouchableOpacity>
           )}
