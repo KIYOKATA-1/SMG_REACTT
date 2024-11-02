@@ -130,10 +130,10 @@ export interface ITestQuestions {
 export type UserAnswer =
   { answer: { text: string; img?: string } }  // img теперь необязательный
   | { answer: { text: string; img?: string }[] }
-  | { answer: string }  // для SingleSelect, ShortOpen, OpenParagraph, QuantitativeCharacteristics
-  | { answer: string[] }  // для MultipleSelect
-  | { [key: string]: string }  // для Match
-  | { [key: string]: string[] };  // для DragDrop
+  | { answer: string }  
+  | { answer: string[] }  
+  | { [key: string]: string }  
+  | { [key: string]: string[] };  
 
 
 

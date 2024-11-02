@@ -9,17 +9,23 @@ interface QuestionRendererProps {
 }
 
 const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer, isLastQuestion }) => {
-  const [selectedAnswer, setSelectedAnswer] = useState<{ text: string; img: string } | null>(null);
+  const [selectedAnswers, setSelectedAnswers] = useState<{ text: string; img?: string }[]>([]);
+  const isMultipleSelect = question.test_question_data.question_type === QuestionType.MultipleSelect;
 
   const handleSelect = (option: { text: string; img?: string }) => {
-    setSelectedAnswer({ text: option.text, img: option.img || '' });
+    if (isMultipleSelect) {
+      setSelectedAnswers((prev) =>
+        prev.some((item) => item.text === option.text)
+          ? prev.filter((item) => item.text !== option.text)
+          : [...prev, option]
+      );
+    } else {
+      setSelectedAnswers([option]);
+    }
   };
 
   const getOptions = (questionData: TestQuestion) => {
-    if (
-      questionData.question_type === QuestionType.SingleSelect ||
-      questionData.question_type === QuestionType.MultipleSelect
-    ) {
+    if (questionData.question_type === QuestionType.SingleSelect || questionData.question_type === QuestionType.MultipleSelect) {
       return questionData.options?.options || [];
     }
     return [];
@@ -40,7 +46,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer,
           <TouchableOpacity
             style={[
               styles.option,
-              selectedAnswer?.text === item.text ? styles.selectedOption : {},
+              selectedAnswers.some((answer) => answer.text === item.text) ? styles.selectedOption : {},
             ]}
             onPress={() => handleSelect(item)}
           >
@@ -52,11 +58,24 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer,
   };
 
   const submitAnswer = () => {
-    if (!selectedAnswer) {
-      Alert.alert('Ошибка', 'Выберите ответ перед отправкой.');
+    if (selectedAnswers.length === 0) {
+      Alert.alert('Ошибка', 'Выберите хотя бы один ответ перед отправкой.');
       return;
     }
-    onAnswer({ answer: { text: selectedAnswer.text, img: selectedAnswer.img } });
+
+    let formattedAnswer: UserAnswer;
+    if (isMultipleSelect) {
+      // MultipleSelect: отправляем массив объектов с ответами
+      formattedAnswer = { answer: selectedAnswers.map((ans) => ({ text: ans.text, img: ans.img })) };
+    } else {
+      // SingleSelect: отправляем один объект
+      formattedAnswer = { answer: { text: selectedAnswers[0].text, img: selectedAnswers[0].img } };
+    }
+
+    // Log for debugging
+    console.log('Отправляемый ответ:', JSON.stringify(formattedAnswer));
+
+    onAnswer(formattedAnswer);
   };
 
   return (
