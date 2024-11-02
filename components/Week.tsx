@@ -25,6 +25,11 @@ interface WeekProps {
   courseId: number;
 }
 
+// Helper function to check if content has `is_ended` property
+function hasIsEnded(content: any): content is ContentData & { is_ended: boolean } {
+  return content && typeof content.is_ended === 'boolean';
+}
+
 const Week: React.FC<WeekProps> = ({ week, courseId }) => {
   const { getSession } = useSession();
   const navigation = useNavigation<NavigationProp>();
@@ -42,30 +47,35 @@ const Week: React.FC<WeekProps> = ({ week, courseId }) => {
   }, []);
 
   useEffect(() => {
-    const fetchCompletedLectures = async () => {
+    const fetchCompletedContent = async () => {
       const session = await getSession();
       if (session) {
-        const completed = new Set(
+        const completedContent = new Set(
           week.lessons_data.flatMap((lesson) =>
-            [...lesson.lectures_data, ...lesson.video_lessons_data]
-              .filter((content) => content.is_ended)
+            [...lesson.lectures_data, ...lesson.video_lessons_data, ...lesson.test_data]
+              .filter((content) => hasIsEnded(content) && content.is_ended)
               .map((content) => content.id)
+              .filter((id): id is number => id !== undefined)
           )
         );
-        setCompletedLectures(completed);
+        setCompletedLectures(completedContent);
       }
     };
-    fetchCompletedLectures();
+    fetchCompletedContent();
   }, [week, getSession]);
 
   const markAsCompleted = useCallback(
-    async (content: ContentData) => {
+    async (content: ContentData | TestData) => {
       const session = await getSession();
-      if (!session) return;
+      if (!session || content.id === undefined) return;
 
       try {
         await CourseService.endLessonContent(session.key, content.id);
-        setCompletedLectures((prev) => new Set(prev).add(content.id));
+        setCompletedLectures((prev) => {
+          const updated = new Set(prev);
+          if (content.id !== undefined) updated.add(content.id);
+          return updated;
+        });
       } catch (error) {
         console.error('Ошибка завершения контента:', error);
       }
@@ -103,6 +113,13 @@ const Week: React.FC<WeekProps> = ({ week, courseId }) => {
   const openTest = (test: TestData) => {
     if (test.id !== undefined) {
       navigation.navigate('TestPage', { testId: test.id });
+      if (hasIsEnded(test) && test.is_ended) {
+        setCompletedLectures((prev) => {
+          const updated = new Set(prev);
+          updated.add(test.id);
+          return updated;
+        });
+      }
     } else {
       console.error('ID теста отсутствует');
     }
@@ -120,64 +137,69 @@ const Week: React.FC<WeekProps> = ({ week, courseId }) => {
           {expanded && (
             <View style={CourseStyle.lessonContainer}>
               {week.lessons_data.map((lesson, index) => (
-                <View key={lesson.id} style={CourseStyle.lessonItem}>
-                  <Text style={CourseStyle.lessonText}>{index + 1} урок</Text>
-                  <View style={{ flex: 1, gap: 20, alignItems: 'center' }}>
-                    {lesson.lectures_data.map((lecture) => (
-                      <TouchableOpacity
-                        key={lecture.id}
-                        onPress={() => openPDF(lecture)}
-                        style={CourseStyle.buttonContainer}
-                      >
-                        <FontAwesomeIcon icon={faFilePdf} size={18} color="#000" />
-                        <Text style={CourseStyle.buttonText}>{lecture.name}</Text>
-                        <View style={CourseStyle.indicatorWrapper}>
-                          {completedLectures.has(lecture.id) ? (
-                            <FontAwesomeIcon icon={faCheck} style={CourseStyle.checked} />
-                          ) : (
-                            <View style={CourseStyle.circle} />
-                          )}
-                        </View>
-                      </TouchableOpacity>
-                    ))}
+                <React.Fragment key={lesson.id}>
+                  <View style={CourseStyle.lessonItem}>
+                    <Text style={CourseStyle.lessonText}>{index + 1} урок</Text>
+                    <View style={{ flex: 1, gap: 20, alignItems: 'center' }}>
+                      {lesson.lectures_data.map((lecture) => (
+                        <TouchableOpacity
+                          key={lecture.id}
+                          onPress={() => openPDF(lecture)}
+                          style={CourseStyle.buttonContainer}
+                        >
+                          <FontAwesomeIcon icon={faFilePdf} size={18} color="#000" />
+                          <Text style={CourseStyle.buttonText}>{lecture.name}</Text>
+                          <View style={CourseStyle.indicatorWrapper}>
+                            {completedLectures.has(lecture.id ?? 0) ? (
+                              <FontAwesomeIcon icon={faCheck} style={CourseStyle.checked} />
+                            ) : (
+                              <View style={CourseStyle.circle} />
+                            )}
+                          </View>
+                        </TouchableOpacity>
+                      ))}
 
-                    {lesson.video_lessons_data.map((video) => (
-                      <TouchableOpacity
-                        key={video.id}
-                        onPress={() => openVideo(video)}
-                        style={CourseStyle.buttonContainer}
-                      >
-                        <FontAwesomeIcon icon={faFilm} size={18} color="#000" />
-                        <Text style={CourseStyle.buttonText}>{video.name}</Text>
-                        <View style={CourseStyle.indicatorWrapper}>
-                          {completedLectures.has(video.id) ? (
-                            <FontAwesomeIcon icon={faCheck} style={CourseStyle.checked} />
-                          ) : (
-                            <View style={CourseStyle.circle} />
-                          )}
-                        </View>
-                      </TouchableOpacity>
-                    ))}
+                      {lesson.video_lessons_data.map((video) => (
+                        <TouchableOpacity
+                          key={video.id}
+                          onPress={() => openVideo(video)}
+                          style={CourseStyle.buttonContainer}
+                        >
+                          <FontAwesomeIcon icon={faFilm} size={18} color="#000" />
+                          <Text style={CourseStyle.buttonText}>{video.name}</Text>
+                          <View style={CourseStyle.indicatorWrapper}>
+                            {completedLectures.has(video.id ?? 0) ? (
+                              <FontAwesomeIcon icon={faCheck} style={CourseStyle.checked} />
+                            ) : (
+                              <View style={CourseStyle.circle} />
+                            )}
+                          </View>
+                        </TouchableOpacity>
+                      ))}
 
-                    {lesson.test_data.map((test) => (
-                      <TouchableOpacity
-                        key={test.id}
-                        onPress={() => openTest(test)}
-                        style={CourseStyle.buttonContainer}
-                      >
-                        <FontAwesomeIcon icon={faGraduationCap} size={18} color="#000" />
-                        <Text style={CourseStyle.buttonText}>{test.name}</Text>
-                        <View style={CourseStyle.indicatorWrapper}>
-                          {completedLectures.has(test.id ?? 0) ? (
-                            <FontAwesomeIcon icon={faCheck} style={CourseStyle.checked} />
-                          ) : (
-                            <View style={CourseStyle.circle} />
-                          )}
-                        </View>
-                      </TouchableOpacity>
-                    ))}
+                      {lesson.test_data.map((test) => (
+                        <TouchableOpacity
+                          key={test.id}
+                          onPress={() => openTest(test)}
+                          style={CourseStyle.buttonContainer}
+                        >
+                          <FontAwesomeIcon icon={faGraduationCap} size={18} color="#000" />
+                          <Text style={CourseStyle.buttonText}>{test.name}</Text>
+                          <View style={CourseStyle.indicatorWrapper}>
+                            {completedLectures.has(test.id ?? 0) ? (
+                              <FontAwesomeIcon icon={faCheck} style={CourseStyle.checked} />
+                            ) : (
+                              <View style={CourseStyle.circle} />
+                            )}
+                          </View>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
                   </View>
-                </View>
+                  {index < week.lessons_data.length - 1 && (
+                    <View style={CourseStyle.divider} />
+                  )}
+                </React.Fragment>
               ))}
             </View>
           )}

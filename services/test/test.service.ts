@@ -61,8 +61,8 @@ export class TestService {
     });
     return await response.json() as TestWrapper;
   }
-static async answerTestQuestion(token: string, question_answer_id: number, answer: UserAnswer) {
-  try {
+
+  static async answerTestQuestion(token: string, question_answer_id: number, answer: UserAnswer) {
     const response = await fetch(`${BACKEND_URL}/courses/tests/answer/`, {
       method: 'PATCH',
       headers: {
@@ -74,22 +74,12 @@ static async answerTestQuestion(token: string, question_answer_id: number, answe
         user_answer: answer
       }),
     });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Ошибка сервера:", errorData);
-      throw new Error('Ошибка при отправке ответа на сервер');
+    if (response.status !== 200) {
+      throw new Error('Error while answering question');
+    } else {
+      return await response.json() as TestWrapper
     }
-
-    const responseData = await response.json();
-    console.log("Ответ сервера:", responseData);
-    return responseData as TestWrapper;
-  } catch (error) {
-    console.error("Ошибка в запросе answerTestQuestion:", error);
-    throw error;
   }
-}
-
   static async changeScoreForAnswer(token: string, answer_id: number, score_for_answer: string) {
     const response = await fetch(`${BACKEND_URL}/courses/tests/user/answer/${answer_id}/`, {
       method: 'PATCH',

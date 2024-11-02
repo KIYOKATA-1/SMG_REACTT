@@ -1,5 +1,4 @@
-import {TestData} from "../course.types";
-
+import { TestData } from "../course.types";
 export interface TestWrapper {
   count: number;
   next: string | null;
@@ -53,14 +52,14 @@ export type DragDropAnswers = { [category: string]: string[] };
 export interface SingleSelectQuestion extends BaseQuestion {
   question_type: QuestionType.SingleSelect;
   options: {
-    options: { text: string; img?: string }[]; // img необязательный
+    options: { text: string; img?: string }[];
   };
   answer: { answer: { text: string; img?: string } } | null;
 }
 
 export interface MultipleSelectQuestion extends BaseQuestion {
   question_type: QuestionType.MultipleSelect;
-  options: { options: { text: string; img?: string }[] }; // img необязательный
+  options: { options: { text: string; img?: string }[] }; 
   answer: { answer: { text: string; img?: string }[] } | null;
 }
 
@@ -109,6 +108,7 @@ export type TestQuestion =
   | QuantitativeCharacteristicsQuestion;
 
 export interface ITestQuestions {
+  correct_answer: {};
   checked: boolean | null;
   course: number | null;
   flag: FlagType;
@@ -137,20 +137,26 @@ export type UserAnswer =
 
 
 
-export interface IUserTestResults {
-  correct_count: number;
-  ended_time: string;
-  id: number;
-  is_ended: boolean;
-  order: number;
-  score: string;
-  test_data: TestData;
-  user_data: {
+  export interface IUserTestResults {
+    correct_count: number | string; // Добавляем поддержку string | number
+    ended_time: string;
     id: number;
-    full_name: string;
-  };
-  user_answers: UserTestResultQuestions[];
-}
+    is_ended: boolean;
+    order: number;
+    score: string | number; // Поддержка как строки, так и числа
+    test_data: TestData;
+    user_data: {
+      id: number;
+      full_name: string;
+    };
+    user_answers: UserTestResultQuestions[];
+    total?: number;
+    amount?: number;
+    completion_percentage?: number;
+  }
+  
+  
+  
 
 export enum FlagType {
   UNTAGGED = 0,
@@ -174,3 +180,5 @@ export interface UserTestResultQuestions {
   test_question: number;
   course: number | null;
 }
+export { TestData };
+

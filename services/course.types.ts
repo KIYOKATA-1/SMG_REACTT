@@ -107,18 +107,19 @@ export interface ContentData {
 }
 
 
+// course.types.ts
 export interface TestData {
   week?: number;
   description: string;
   duration: number | null;
-  end_time?: string | null; // Optional
-  id?: number; // Optional
+  end_time?: string | null;
+  id?: number;
   is_visible: boolean;
   name: string;
-  order?: number; // Optional
-  question_count?: number; // Optional
-  score?: number; // Optional
-  start_time?: string | null; // Optional
+  order?: number;
+  question_count?: number;
+  score?: number;
+  start_time?: string | null;
   test_type: number;
   user_test_ended?: boolean | null;
   user_test_id?: number | null;
@@ -126,6 +127,7 @@ export interface TestData {
   lesson?: number;
   is_superfinal?: boolean;
 }
+
 
 
 export interface WeekTestData {

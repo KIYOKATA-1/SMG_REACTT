@@ -143,4 +143,10 @@ export const CourseStyle = StyleSheet.create({
     borderRadius: 20,
     marginLeft: 10,
   },
+  divider:{
+    width: '100%',
+    height: 2,
+    backgroundColor: '#0C0E2B',
+    marginBottom: 10,
+  }
 });
