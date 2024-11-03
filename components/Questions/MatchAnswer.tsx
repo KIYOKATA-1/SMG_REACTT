@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 
 interface MatchAnswerProps {
@@ -10,115 +10,120 @@ interface MatchAnswerProps {
   answer: { [key: string]: string } | null;
 }
 
-interface Connection {
-  source: number;
-  target: number;
-}
-
 const MatchAnswer: React.FC<MatchAnswerProps> = ({ options, setAnswer, answer }) => {
-  const [selectedLeft, setSelectedLeft] = useState<number | null>(null);
-  const [connections, setConnections] = useState<Connection[]>([]);
+  const [selectedLeft, setSelectedLeft] = useState<string | null>(null);
   const [matchResults, setMatchResults] = useState<{ [key: string]: string }>({});
-  const prevMatchResultsRef = useRef<{ [key: string]: string }>({});
 
-  const handleLeftClick = (index: number) => {
-    setSelectedLeft(index);
+  useEffect(() => {
+    if (answer && JSON.stringify(answer) !== JSON.stringify(matchResults)) {
+      setMatchResults(answer);
+    }
+  }, [answer]);
+
+  useEffect(() => {
+    setAnswer(matchResults);
+  }, [matchResults, setAnswer]);
+
+  const handleLeftSelect = (leftText: string) => {
+    setSelectedLeft(leftText === selectedLeft ? null : leftText);
   };
 
-  const handleRightClick = (index: number) => {
-    if (selectedLeft !== null) {
-      let updatedConnections = connections.filter((conn) => conn.target !== index);
-      updatedConnections = updatedConnections.filter((conn) => conn.source !== selectedLeft);
+  const handleRightSelect = (rightText: string) => {
+    if (selectedLeft) {
+      setMatchResults((prev) => {
+        const updatedResults = { ...prev };
 
-      const newConnection = { source: selectedLeft, target: index };
-      updatedConnections.push(newConnection);
-      setConnections(updatedConnections);
+        Object.keys(updatedResults).forEach((key) => {
+          if (updatedResults[key] === rightText) {
+            delete updatedResults[key];
+          }
+        });
 
-      const updatedResults = { ...matchResults };
-      updatedResults[selectedLeft.toString()] = index.toString();
-      setMatchResults(updatedResults);
+        updatedResults[selectedLeft] = rightText;
+        return updatedResults;
+      });
 
       setSelectedLeft(null);
     }
   };
 
-  useEffect(() => {
-    if (JSON.stringify(prevMatchResultsRef.current) !== JSON.stringify(matchResults)) {
-      setAnswer(matchResults);
-      prevMatchResultsRef.current = matchResults;
-    }
-  }, [matchResults, setAnswer]);
+  const leftOptions = options.left.map(item => Object.values(item)[0]);
+  const rightOptions = options.right.map(item => Object.values(item)[0]);
 
-  useEffect(() => {
-    if (answer) {
-      const newMatchResults: { [key: string]: string } = {};
-      const newConnections: Connection[] = [];
-
-      for (const [sourceKey, targetKey] of Object.entries(answer)) {
-        const sourceIndex = parseInt(sourceKey, 10);
-        const targetIndex = parseInt(targetKey, 10);
-        newConnections.push({ source: sourceIndex, target: targetIndex });
-        newMatchResults[sourceKey] = targetKey;
-      }
-
-      if (JSON.stringify(matchResults) !== JSON.stringify(newMatchResults)) {
-        setConnections(newConnections);
-        setMatchResults(newMatchResults);
-      }
-    } else {
-      if (Object.keys(matchResults).length > 0) {
-        setConnections([]);
-        setMatchResults({});
-      }
-    }
-  }, [answer]);
-
-  const renderLeftOptions = () => (
-    <FlatList
-      data={options.left}
-      keyExtractor={(_, index) => `left-${index}`}
-      renderItem={({ item, index }) => (
-        <TouchableOpacity
-          style={[styles.option, selectedLeft === index ? styles.selectedOption : styles.defaultOption]}
-          onPress={() => handleLeftClick(index)}
-        >
-          <Text style={styles.optionText}>{item[index].text}</Text>
-        </TouchableOpacity>
-      )}
-    />
-  );
-
-  const renderRightOptions = () => (
-    <FlatList
-      data={options.right}
-      keyExtractor={(_, index) => `right-${index}`}
-      renderItem={({ item, index }) => (
-        <TouchableOpacity style={styles.option} onPress={() => handleRightClick(index)}>
-          <Text style={styles.optionText}>{item[index].text}</Text>
-        </TouchableOpacity>
-      )}
-    />
+  const renderOption = (
+    item: { text: string; img?: string },
+    isSelected: boolean,
+    isMatched: boolean,
+    onPress: () => void
+  ) => (
+    <TouchableOpacity
+      style={[
+        styles.option,
+        isSelected ? styles.selectedOption : {},
+        isMatched ? styles.matchedOption : {},
+      ]}
+      onPress={onPress}
+    >
+      <Text style={styles.optionText}>{item.text}</Text>
+    </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Подберите соответствия</Text>
-      <View style={styles.optionsContainer}>
-        {renderLeftOptions()}
-        {renderRightOptions()}
-      </View>
-    </View>
+    <FlatList
+      data={[{ key: 'match' }]}
+      renderItem={() => (
+        <View style={styles.container}>
+          <Text style={styles.questionText}>Подберите соответствия</Text>
+          <View style={styles.matchContainer}>
+            <View style={styles.column}>
+              {leftOptions.map((item, index) => (
+                <React.Fragment key={index}>
+                  {renderOption(
+                    item,
+                    selectedLeft === item.text,
+                    Boolean(matchResults[item.text]),
+                    () => handleLeftSelect(item.text)
+                  )}
+                </React.Fragment>
+              ))}
+            </View>
+
+            <View style={styles.column}>
+              {rightOptions.map((item, index) => (
+                <React.Fragment key={index}>
+                  {renderOption(
+                    item,
+                    matchResults[selectedLeft || ''] === item.text,
+                    Object.values(matchResults).includes(item.text),
+                    () => handleRightSelect(item.text)
+                  )}
+                </React.Fragment>
+              ))}
+            </View>
+          </View>
+        </View>
+      )}
+      keyExtractor={(item) => item.key}
+    />
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  title: { fontSize: 22, fontWeight: 'bold', color: 'white', marginBottom: 20 },
-  optionsContainer: { flexDirection: 'row', justifyContent: 'space-between' },
-  option: { padding: 10, margin: 5, borderRadius: 5, backgroundColor: '#21192A', minWidth: 100 },
-  optionText: { color: 'white', textAlign: 'center' },
-  selectedOption: { backgroundColor: '#531894' },
-  defaultOption: { backgroundColor: '#21192A' },
+  container: { flexGrow: 1, padding: 20 },
+  questionText: { fontSize: 18, marginBottom: 20, textAlign: 'center' },
+  matchContainer: { flexDirection: 'row', justifyContent: 'space-between' },
+  column: { flex: 1, paddingHorizontal: 10 },
+  option: {
+    padding: 15,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 5,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  selectedOption: { backgroundColor: '#add8e6' },
+  matchedOption: { backgroundColor: '#d3ffd3' },
+  optionText: { fontSize: 16 },
 });
 
 export default MatchAnswer;

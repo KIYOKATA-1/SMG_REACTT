@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, Button, Alert, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
-import { ITestQuestions, UserAnswer, QuestionType, TestQuestion } from '../../services/test/test.types';
+import { View, Text, Button, Alert, StyleSheet, FlatList , TouchableOpacity} from 'react-native';
+import { ITestQuestions, UserAnswer, QuestionType, TestQuestion, MatchQuestion } from '../../services/test/test.types';
+import MatchAnswer from '../../components/Questions/MatchAnswer';
+import MultipleAnswer from '../../components/Questions/MultipleAnswer';
+import SingleAnswer from '../../components/Questions/SingleAnswer';
 
 interface QuestionRendererProps {
   question: ITestQuestions;
@@ -10,7 +13,9 @@ interface QuestionRendererProps {
 
 const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer, isLastQuestion }) => {
   const [selectedAnswers, setSelectedAnswers] = useState<{ text: string; img?: string }[]>([]);
+  const [matchResults, setMatchResults] = useState<{ [key: string]: string }>({});
   const isMultipleSelect = question.test_question_data.question_type === QuestionType.MultipleSelect;
+  const isMatch = question.test_question_data.question_type === QuestionType.Match;
 
   const handleSelect = (option: { text: string; img?: string }) => {
     if (isMultipleSelect) {
@@ -19,7 +24,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer,
           ? prev.filter((item) => item.text !== option.text)
           : [...prev, option]
       );
-    } else {
+    } else if (!isMatch) {
       setSelectedAnswers([option]);
     }
   };
@@ -28,53 +33,62 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer,
     if (questionData.question_type === QuestionType.SingleSelect || questionData.question_type === QuestionType.MultipleSelect) {
       return questionData.options?.options || [];
     }
+    if (questionData.question_type === QuestionType.Match) {
+      return (questionData as MatchQuestion).options;
+    }
     return [];
   };
 
   const renderOptions = () => {
     const options = getOptions(question.test_question_data);
 
-    if (options.length === 0) {
+    if (isMatch && options && 'left' in options && 'right' in options) {
+      return (
+        <MatchAnswer
+          options={options}
+          setAnswer={setMatchResults}
+          answer={matchResults}
+        />
+      );
+    } else if (Array.isArray(options) && options.length > 0) {
+      return (
+        <FlatList
+          data={options}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[
+                styles.option,
+                selectedAnswers.some((answer) => answer.text === item.text) ? styles.selectedOption : {},
+              ]}
+              onPress={() => handleSelect(item)}
+            >
+              <Text style={styles.optionText}>{item.text}</Text>
+            </TouchableOpacity>
+          )}
+        />
+      );
+    } else {
       return <Text>Опции не найдены для данного вопроса.</Text>;
     }
-
-    return (
-      <FlatList
-        data={options}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[
-              styles.option,
-              selectedAnswers.some((answer) => answer.text === item.text) ? styles.selectedOption : {},
-            ]}
-            onPress={() => handleSelect(item)}
-          >
-            <Text style={styles.optionText}>{item.text}</Text>
-          </TouchableOpacity>
-        )}
-      />
-    );
   };
 
   const submitAnswer = () => {
-    if (selectedAnswers.length === 0) {
+    if (!isMatch && selectedAnswers.length === 0) {
       Alert.alert('Ошибка', 'Выберите хотя бы один ответ перед отправкой.');
       return;
     }
 
     let formattedAnswer: UserAnswer;
-    if (isMultipleSelect) {
-      // MultipleSelect: отправляем массив объектов с ответами
+    if (isMatch) {
+      formattedAnswer = { answer: matchResults };
+    } else if (isMultipleSelect) {
       formattedAnswer = { answer: selectedAnswers.map((ans) => ({ text: ans.text, img: ans.img })) };
     } else {
-      // SingleSelect: отправляем один объект
       formattedAnswer = { answer: { text: selectedAnswers[0].text, img: selectedAnswers[0].img } };
     }
 
-    // Log for debugging
     console.log('Отправляемый ответ:', JSON.stringify(formattedAnswer));
-
     onAnswer(formattedAnswer);
   };
 

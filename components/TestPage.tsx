@@ -2,10 +2,10 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, Button, ActivityIndicator, SafeAreaView, Alert, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TestService } from '../services/test/test.service';
-import { TestWrapper, UserAnswer, IUserTestResults, ITestQuestions, FlagType } from '../services/test/test.types';
+import { TestWrapper, UserAnswer, IUserTestResults, ITestQuestions } from '../services/test/test.types';
 import { useSession } from '../lib/useSession';
 import QuestionRenderer from '@/screens/QuestionRenderer';
-import TestResultPage from './TestResultPage';
+import TestResultPage from './Results/TestResultPage';
 
 interface TestPageProps {
   route: { params: { testId: number } };
@@ -34,12 +34,10 @@ const TestPage: React.FC<TestPageProps> = ({ route, navigation }) => {
 
       try {
         const savedUserTestId = await AsyncStorage.getItem(`userTestId_${testId}`);
-        console.log("Saved userTestId from AsyncStorage:", savedUserTestId); // Логирование
-
         if (savedUserTestId) {
           const result = await TestService.getTestResult(sessionData.key, savedUserTestId);
           if (result?.is_ended) {
-            setTestResult(result);
+            setTestResult(result); // Сохраняем результат теста, если он завершен
             setLoading(false);
             return;
           }
@@ -90,7 +88,7 @@ const TestPage: React.FC<TestPageProps> = ({ route, navigation }) => {
           await TestService.endTest(session, userTestId);
           await AsyncStorage.removeItem(`userTestId_${testId}`);
           const result = await TestService.getTestResult(session, userTestId.toString());
-          setTestResult(result);
+          setTestResult(result); // Переходим к отображению результата
         } else {
           setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
         }
@@ -114,7 +112,6 @@ const TestPage: React.FC<TestPageProps> = ({ route, navigation }) => {
     return (
       <TestResultPage
         testResult={testResult}
-        userTestId={userTestId}
         navigation={navigation}
       />
     );

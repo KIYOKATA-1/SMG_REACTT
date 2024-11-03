@@ -22,9 +22,10 @@ const MultipleAnswer: React.FC<MultipleAnswerProps> = ({ question, onAnswer }) =
       Alert.alert('Ошибка', 'Выберите хотя бы один ответ.');
       return;
     }
-    // Преобразуем в массив объектов для корректной отправки
-    const formattedAnswer = { answer: selectedOptions.map((text) => ({ text })) };
-    onAnswer(formattedAnswer); // Отправляем массив объектов
+
+    const formattedAnswer: UserAnswer = { answer: selectedOptions }; // Форматируем ответ как массив строк
+    console.log('Отправляемый ответ (MultipleAnswer):', JSON.stringify(formattedAnswer));
+    onAnswer(formattedAnswer);
   };
 
   return (

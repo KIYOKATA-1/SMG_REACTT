@@ -20,7 +20,10 @@ const SingleAnswer: React.FC<SingleAnswerProps> = ({ question, onAnswer }) => {
       Alert.alert('Ошибка', 'Выберите ответ перед отправкой.');
       return;
     }
-    onAnswer({ answer: { text: selectedOption } });
+    
+    const formattedAnswer: UserAnswer = { answer: selectedOption };
+    console.log('Отправляемый ответ (SingleAnswer):', JSON.stringify(formattedAnswer));
+    onAnswer(formattedAnswer);
   };
 
   return (

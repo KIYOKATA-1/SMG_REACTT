@@ -3,7 +3,7 @@ import { IUserTestResults, TestWrapper, UserAnswer } from "../test/test.types";
 const BACKEND_URL = 'https://api.smg.kz/en/api';
 
 export class TestService {
-  static async startTest(token: string, test_id: number) {
+  static async startTest(token: string, test_id: number): Promise<{ user_test_id: number }> {
     try {
       const response = await fetch(`${BACKEND_URL}/courses/tests/start/`, {
         method: 'POST',
@@ -20,7 +20,11 @@ export class TestService {
         throw new Error(`Error while starting test: ${errorText}`);
       }
 
-      return await response.json() as { user_test_id: number };
+      const data = await response.json();
+      if (!data.user_test_id) {
+        throw new Error("API response structure for 'startTest' is invalid: missing 'user_test_id'");
+      }
+      return data;
     } catch (error) {
       console.error('Error starting test:', error);
       throw error;
@@ -51,7 +55,7 @@ export class TestService {
     }
   }
 
-  static async getTestQuestions(token: string, userTestId: string, isAnswered: boolean | null) {
+  static async getTestQuestions(token: string, userTestId: string, isAnswered: boolean | null): Promise<TestWrapper> {
     try {
       const response = await fetch(`${BACKEND_URL}/courses/tests/user/answer/?user_test_id=${userTestId}&is_answered=${isAnswered}&limit=1000`, {
         method: 'GET',
@@ -101,7 +105,7 @@ export class TestService {
     }
   }
 
-  static async getTestResult(token: string, userTestId: string) {
+  static async getTestResult(token: string, userTestId: string): Promise<IUserTestResults> {
     try {
       const response = await fetch(`${BACKEND_URL}/courses/tests/results/${userTestId}/`, {
         method: 'GET',

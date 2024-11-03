@@ -12,7 +12,7 @@ export interface ICourse {
   students: {
     count: number;
     avatars: string[];
-  }
+  };
   order: number;
   name: string;
   type: number;
@@ -37,7 +37,7 @@ export interface IUserCourse {
   students: {
     count: number;
     avatars: string[];
-  }
+  };
   user?: number;
   teachers: ITeacher[];
 }
@@ -57,7 +57,6 @@ export interface ICourseDetails {
     avatars: string[];
   };
 }
-
 
 export interface ITeacher {
   id: number;
@@ -83,7 +82,7 @@ export interface CourseWeekLessons {
   lesson_week: {
     id: number;
     order: number;
-  }
+  };
   name: string;
   test_data: TestData[];
   video_lessons_data: ContentData[];
@@ -106,8 +105,6 @@ export interface ContentData {
   video_1080?: string;
 }
 
-
-// course.types.ts
 export interface TestData {
   week?: number;
   description: string;
@@ -127,8 +124,6 @@ export interface TestData {
   lesson?: number;
   is_superfinal?: boolean;
 }
-
-
 
 export interface WeekTestData {
   description: string;
@@ -160,8 +155,8 @@ export interface ISuperFinal {
     id: number;
     full_name: string;
     phone?: string;
-    photo?: string|null;
-  }
+    photo?: string | null;
+  };
   courses?: {
     course_id: number;
     course_name: string;
@@ -172,7 +167,7 @@ export interface ISuperFinal {
   score: string;
   month: number;
   product: {
-    id:number;
-    name:string;
+    id: number;
+    name: string;
   };
 }
