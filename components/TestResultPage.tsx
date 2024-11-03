@@ -47,18 +47,19 @@ const TestResultPage: React.FC<TestResultPageProps> = ({ testResult, userTestId,
 
         <Text style={styles.subHeader}>Ваш ответ:</Text>
         <View style={styles.optionsContainer}>
-          {questionWithOptions.options?.options.map((option, index) => {
-            const isSelected = Array.isArray(user_answer.answer)
-              ? user_answer.answer.some((ans) => typeof ans === 'object' && ans.text === option.text)
-              : typeof user_answer.answer === 'object' && user_answer.answer?.text === option.text;
+  {questionWithOptions.options?.options?.map((option, index) => {
+    const isSelected = Array.isArray(user_answer.answer)
+      ? user_answer.answer.some((ans) => typeof ans === 'object' && ans.text === option.text)
+      : typeof user_answer.answer === 'object' && user_answer.answer?.text === option.text;
 
-            const isCorrect = Array.isArray(correct_answer.answer)
-              ? correct_answer.answer.some((ans) => typeof ans === 'object' && ans.text === option.text)
-              : typeof correct_answer.answer === 'object' && correct_answer.answer?.text === option.text;
+    const isCorrect = Array.isArray(correct_answer.answer)
+      ? correct_answer.answer.some((ans) => typeof ans === 'object' && ans.text === option.text)
+      : typeof correct_answer.answer === 'object' && correct_answer.answer?.text === option.text;
 
-            return renderAnswerOption(option, isSelected, isCorrect, index);
-          })}
-        </View>
+    return renderAnswerOption(option, isSelected, isCorrect, index);
+  })}
+</View>
+
 
         {isShowCorrect && (
           <>
