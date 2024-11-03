@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, Button, Alert, StyleSheet, FlatList , TouchableOpacity} from 'react-native';
+import { View, Text, Button, Alert, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { ITestQuestions, UserAnswer, QuestionType, TestQuestion, MatchQuestion } from '../../services/test/test.types';
 import MatchAnswer from '../../components/Questions/MatchAnswer';
 import MultipleAnswer from '../../components/Questions/MultipleAnswer';
 import SingleAnswer from '../../components/Questions/SingleAnswer';
+import ShortOpenAnswer from '../../components/Questions/ShortOpenAnswer';
 
 interface QuestionRendererProps {
   question: ITestQuestions;
@@ -14,8 +15,11 @@ interface QuestionRendererProps {
 const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer, isLastQuestion }) => {
   const [selectedAnswers, setSelectedAnswers] = useState<{ text: string; img?: string }[]>([]);
   const [matchResults, setMatchResults] = useState<{ [key: string]: string }>({});
+  const [shortOpenAnswer, setShortOpenAnswer] = useState<string>('');
+
   const isMultipleSelect = question.test_question_data.question_type === QuestionType.MultipleSelect;
   const isMatch = question.test_question_data.question_type === QuestionType.Match;
+  const isShortOpen = question.test_question_data.question_type === QuestionType.ShortOpen;
 
   const handleSelect = (option: { text: string; img?: string }) => {
     if (isMultipleSelect) {
@@ -50,6 +54,13 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer,
           answer={matchResults}
         />
       );
+    } else if (isShortOpen) {
+      return (
+        <ShortOpenAnswer
+          answer={{ answer: shortOpenAnswer }}
+          setAnswer={setShortOpenAnswer}
+        />
+      );
     } else if (Array.isArray(options) && options.length > 0) {
       return (
         <FlatList
@@ -74,7 +85,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer,
   };
 
   const submitAnswer = () => {
-    if (!isMatch && selectedAnswers.length === 0) {
+    if (!isMatch && !isShortOpen && selectedAnswers.length === 0) {
       Alert.alert('Ошибка', 'Выберите хотя бы один ответ перед отправкой.');
       return;
     }
@@ -84,6 +95,8 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer,
       formattedAnswer = { answer: matchResults };
     } else if (isMultipleSelect) {
       formattedAnswer = { answer: selectedAnswers.map((ans) => ({ text: ans.text, img: ans.img })) };
+    } else if (isShortOpen) {
+      formattedAnswer = { answer: shortOpenAnswer };
     } else {
       formattedAnswer = { answer: { text: selectedAnswers[0].text, img: selectedAnswers[0].img } };
     }

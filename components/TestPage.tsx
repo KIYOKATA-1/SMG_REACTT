@@ -31,7 +31,7 @@ const TestPage: React.FC<TestPageProps> = ({ route, navigation }) => {
         return;
       }
       setSession(sessionData.key);
-
+  
       try {
         const savedUserTestId = await AsyncStorage.getItem(`userTestId_${testId}`);
         if (savedUserTestId) {
@@ -39,10 +39,11 @@ const TestPage: React.FC<TestPageProps> = ({ route, navigation }) => {
           if (result?.is_ended) {
             setTestResult(result); // Сохраняем результат теста, если он завершен
             setLoading(false);
-            return;
+            return; // Останавливаем дальнейшую загрузку теста
           }
         }
-
+  
+        // Логика запуска нового теста, если он не был завершен
         if (savedUserTestId) {
           setUserTestId(parseInt(savedUserTestId, 10));
           const questions = await TestService.getTestQuestions(sessionData.key, savedUserTestId, null);
@@ -60,9 +61,10 @@ const TestPage: React.FC<TestPageProps> = ({ route, navigation }) => {
         setLoading(false);
       }
     };
-
+  
     checkTestCompletion();
   }, [getSession, testId]);
+  
 
   const handleAnswerSubmission = useCallback(
     async (answer: UserAnswer) => {
