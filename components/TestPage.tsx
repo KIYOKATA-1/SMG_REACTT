@@ -87,10 +87,16 @@ const TestPage: React.FC<TestPageProps> = ({ route, navigation }) => {
         });
 
         if (currentQuestionIndex === testData.results.length - 1) {
-          await TestService.endTest(session, userTestId);
-          await AsyncStorage.removeItem(`userTestId_${testId}`);
-          const result = await TestService.getTestResult(session, userTestId.toString());
-          setTestResult(result); // Переходим к отображению результата
+          // Проверка перед завершением теста
+          const testResultData = await TestService.getTestResult(session, userTestId.toString());
+          if (!testResultData.is_ended) {
+            await TestService.endTest(session, userTestId);
+            await AsyncStorage.removeItem(`userTestId_${testId}`);
+            const result = await TestService.getTestResult(session, userTestId.toString());
+            setTestResult(result); // Переходим к отображению результата
+          } else {
+            setTestResult(testResultData); // Если тест завершен, отображаем результат
+          }
         } else {
           setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
         }

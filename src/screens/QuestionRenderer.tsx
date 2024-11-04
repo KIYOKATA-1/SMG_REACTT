@@ -5,6 +5,8 @@ import MatchAnswer from '../../components/Questions/MatchAnswer';
 import MultipleAnswer from '../../components/Questions/MultipleAnswer';
 import SingleAnswer from '../../components/Questions/SingleAnswer';
 import ShortOpenAnswer from '../../components/Questions/ShortOpenAnswer';
+import QuantitativeCharacteristicsAnswer from '../../components/Questions/QuantitativeCharacteristicsAnswer';
+import OpenParagraphAnswer from '../../components/Questions/OpenParagraphAnswer';
 
 interface QuestionRendererProps {
   question: ITestQuestions;
@@ -16,10 +18,14 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer,
   const [selectedAnswers, setSelectedAnswers] = useState<{ text: string; img?: string }[]>([]);
   const [matchResults, setMatchResults] = useState<{ [key: string]: string }>({});
   const [shortOpenAnswer, setShortOpenAnswer] = useState<string>('');
+  const [quantitativeAnswer, setQuantitativeAnswer] = useState<string | null>(null);
+  const [openParagraphAnswer, setOpenParagraphAnswer] = useState<string>(''); // State для OpenParagraphAnswer
 
   const isMultipleSelect = question.test_question_data.question_type === QuestionType.MultipleSelect;
   const isMatch = question.test_question_data.question_type === QuestionType.Match;
   const isShortOpen = question.test_question_data.question_type === QuestionType.ShortOpen;
+  const isQuantitative = question.test_question_data.question_type === QuestionType.QuantitativeCharacteristics;
+  const isOpenParagraph = question.test_question_data.question_type === QuestionType.OpenParagraph;
 
   const handleSelect = (option: { text: string; img?: string }) => {
     if (isMultipleSelect) {
@@ -28,7 +34,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer,
           ? prev.filter((item) => item.text !== option.text)
           : [...prev, option]
       );
-    } else if (!isMatch) {
+    } else if (!isMatch && !isQuantitative) {
       setSelectedAnswers([option]);
     }
   };
@@ -39,6 +45,9 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer,
     }
     if (questionData.question_type === QuestionType.Match) {
       return (questionData as MatchQuestion).options;
+    }
+    if (questionData.question_type === QuestionType.QuantitativeCharacteristics) {
+      return questionData.options;
     }
     return [];
   };
@@ -59,6 +68,21 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer,
         <ShortOpenAnswer
           answer={{ answer: shortOpenAnswer }}
           setAnswer={setShortOpenAnswer}
+        />
+      );
+    } else if (isQuantitative && 'options' in options) {
+      return (
+        <QuantitativeCharacteristicsAnswer
+          options={options as { options: string[] }}
+          setAnswer={(selectedAnswer) => setQuantitativeAnswer(selectedAnswer)}
+          answer={question.user_answer as { answer: string } | null}
+        />
+      );
+    } else if (isOpenParagraph) {
+      return (
+        <OpenParagraphAnswer
+          answer={{ answer: openParagraphAnswer }}
+          setAnswer={(text) => setOpenParagraphAnswer(text)}
         />
       );
     } else if (Array.isArray(options) && options.length > 0) {
@@ -85,7 +109,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer,
   };
 
   const submitAnswer = () => {
-    if (!isMatch && !isShortOpen && selectedAnswers.length === 0) {
+    if (!isMatch && !isShortOpen && !isQuantitative && !isOpenParagraph && selectedAnswers.length === 0) {
       Alert.alert('Ошибка', 'Выберите хотя бы один ответ перед отправкой.');
       return;
     }
@@ -97,6 +121,10 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer,
       formattedAnswer = { answer: selectedAnswers.map((ans) => ({ text: ans.text, img: ans.img })) };
     } else if (isShortOpen) {
       formattedAnswer = { answer: shortOpenAnswer };
+    } else if (isQuantitative) {
+      formattedAnswer = { answer: quantitativeAnswer || '' };
+    } else if (isOpenParagraph) {
+      formattedAnswer = { answer: openParagraphAnswer };
     } else {
       formattedAnswer = { answer: { text: selectedAnswers[0].text, img: selectedAnswers[0].img } };
     }

@@ -1,3 +1,4 @@
+// TestResultPage.tsx
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import {
@@ -10,6 +11,8 @@ import ShortOpenResult from '../../components/Results/ShortOpenResult';
 import SingleResult from '../../components/Results/SingleResult';
 import MultipleResult from '../../components/Results/MultipleResult';
 import MatchResult from '../../components/Results/MatchResult';
+import QuantitativeResult from '../../components/Results/QuantitativeResult';
+import OpenParagraphResult from '../../components/Results/OpenParagraphResult';
 
 interface TestResultPageProps {
   testResult: IUserTestResults;
@@ -17,7 +20,7 @@ interface TestResultPageProps {
 }
 
 const TestResultPage: React.FC<TestResultPageProps> = ({ testResult, navigation }) => {
-  const [selectedQuestion, setSelectedQuestion] = useState<number | null>(null);
+  const [selectedQuestion, setSelectedQuestion] = useState<UserTestResultQuestions | null>(null);
 
   const getColorByStatus = (status: FlagType) => {
     switch (status) {
@@ -27,7 +30,6 @@ const TestResultPage: React.FC<TestResultPageProps> = ({ testResult, navigation 
         return '#F15C5C';
       case FlagType.SEMI_CORRECT:
         return '#FF984D';
-      case FlagType.UNTAGGED:
       default:
         return 'transparent';
     }
@@ -43,6 +45,10 @@ const TestResultPage: React.FC<TestResultPageProps> = ({ testResult, navigation 
         return <MultipleResult question={question} />;
       case QuestionType.Match:
         return <MatchResult question={question} />;
+      case QuestionType.QuantitativeCharacteristics:
+        return <QuantitativeResult question={question} />;
+      case QuestionType.OpenParagraph:
+        return <OpenParagraphResult question={question} />;
       default:
         return <Text>Тип вопроса не поддерживается.</Text>;
     }
@@ -61,16 +67,15 @@ const TestResultPage: React.FC<TestResultPageProps> = ({ testResult, navigation 
       </Text>
       <Text style={styles.percentageText}>Процент успешности: {scorePercentage}%</Text>
 
-      {/* Вопросы с цветовыми флажками */}
       <View style={styles.flagsContainer}>
         {testResult.user_answers.map((item, index) => (
           <TouchableOpacity
             key={item.id}
             style={[
               styles.questionContainerSmall,
-              selectedQuestion === item.id && styles.selectedQuestionContainer,
+              selectedQuestion?.id === item.id && styles.selectedQuestionContainer,
             ]}
-            onPress={() => setSelectedQuestion(item.id)}
+            onPress={() => setSelectedQuestion(item)}
           >
             <View style={styles.questionFlag}>
               <Text style={styles.questionNumber}>{index + 1}</Text>
@@ -80,9 +85,14 @@ const TestResultPage: React.FC<TestResultPageProps> = ({ testResult, navigation 
         ))}
       </View>
 
-      {/* Отображение выбранного вопроса */}
-      {selectedQuestion !== null &&
-        renderSelectedQuestion(testResult.user_answers.find((q) => q.id === selectedQuestion)!)}
+      {selectedQuestion && (
+        <View style={styles.selectedQuestionContainer}>
+          <Text style={styles.questionText}>
+            Вопрос: {selectedQuestion.test_question_data.description?.text || 'Описание отсутствует'}
+          </Text>
+          {renderSelectedQuestion(selectedQuestion)}
+        </View>
+      )}
 
       <Button title="Назад к курсу" onPress={() => navigation.goBack()} />
     </View>
@@ -107,6 +117,8 @@ const styles = StyleSheet.create({
     borderColor: 'white',
     borderWidth: 1,
     borderRadius: 6,
+    padding: 15,
+    backgroundColor: '#2E2A3B',
   },
   questionFlag: {
     width: 30,
@@ -124,6 +136,11 @@ const styles = StyleSheet.create({
     height: 10,
     width: '100%',
     marginTop: 4,
+  },
+  questionText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    marginBottom: 10,
   },
 });
 

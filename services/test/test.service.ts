@@ -127,4 +127,27 @@ export class TestService {
       throw error;
     }
   }
+  static async changeScoreForAnswer(token: string, questionId: number, score: string) {
+    try {
+      const response = await fetch(`${BACKEND_URL}/courses/tests/answer/${questionId}/score`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ score })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error updating score:', response.status, errorText);
+        throw new Error(`Error updating score: ${errorText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating score:', error);
+      throw error;
+    }
+  }
 }
