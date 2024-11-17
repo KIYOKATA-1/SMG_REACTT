@@ -7,6 +7,7 @@ import SingleAnswer from '../../components/Questions/SingleAnswer';
 import ShortOpenAnswer from '../../components/Questions/ShortOpenAnswer';
 import QuantitativeCharacteristicsAnswer from '../../components/Questions/QuantitativeCharacteristicsAnswer';
 import OpenParagraphAnswer from '../../components/Questions/OpenParagraphAnswer';
+import DragDropAnswer from '../../components/Questions/DragDropAnswer';
 
 interface QuestionRendererProps {
   question: ITestQuestions;
@@ -19,13 +20,15 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer,
   const [matchResults, setMatchResults] = useState<{ [key: string]: string }>({});
   const [shortOpenAnswer, setShortOpenAnswer] = useState<string>('');
   const [quantitativeAnswer, setQuantitativeAnswer] = useState<string | null>(null);
-  const [openParagraphAnswer, setOpenParagraphAnswer] = useState<string>(''); // State для OpenParagraphAnswer
+  const [openParagraphAnswer, setOpenParagraphAnswer] = useState<string>('');
+  const [dropAnswers, setDropAnswers] = useState<Record<string, string[]>>({}); // State для DragDrop
 
   const isMultipleSelect = question.test_question_data.question_type === QuestionType.MultipleSelect;
   const isMatch = question.test_question_data.question_type === QuestionType.Match;
   const isShortOpen = question.test_question_data.question_type === QuestionType.ShortOpen;
   const isQuantitative = question.test_question_data.question_type === QuestionType.QuantitativeCharacteristics;
   const isOpenParagraph = question.test_question_data.question_type === QuestionType.OpenParagraph;
+  const isDragDrop = question.test_question_data.question_type === QuestionType.DragDrop;
 
   const handleSelect = (option: { text: string; img?: string }) => {
     if (isMultipleSelect) {
@@ -40,13 +43,19 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer,
   };
 
   const getOptions = (questionData: TestQuestion) => {
-    if (questionData.question_type === QuestionType.SingleSelect || questionData.question_type === QuestionType.MultipleSelect) {
+    if (
+      questionData.question_type === QuestionType.SingleSelect ||
+      questionData.question_type === QuestionType.MultipleSelect
+    ) {
       return questionData.options?.options || [];
     }
     if (questionData.question_type === QuestionType.Match) {
       return (questionData as MatchQuestion).options;
     }
-    if (questionData.question_type === QuestionType.QuantitativeCharacteristics) {
+    if (
+      questionData.question_type === QuestionType.QuantitativeCharacteristics ||
+      questionData.question_type === QuestionType.DragDrop
+    ) {
       return questionData.options;
     }
     return [];
@@ -85,6 +94,14 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer,
           setAnswer={(text) => setOpenParagraphAnswer(text)}
         />
       );
+    } else if (isDragDrop) {
+      return (
+        <DragDropAnswer
+          options={options as { categories: string[]; options: { [index: string]: { text: string; img?: string } }[] }}
+          setAnswer={setDropAnswers}
+          answer={dropAnswers}
+        />
+      );
     } else if (Array.isArray(options) && options.length > 0) {
       return (
         <FlatList
@@ -109,7 +126,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer,
   };
 
   const submitAnswer = () => {
-    if (!isMatch && !isShortOpen && !isQuantitative && !isOpenParagraph && selectedAnswers.length === 0) {
+    if (!isMatch && !isShortOpen && !isQuantitative && !isOpenParagraph && !isDragDrop && selectedAnswers.length === 0) {
       Alert.alert('Ошибка', 'Выберите хотя бы один ответ перед отправкой.');
       return;
     }
@@ -125,6 +142,8 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer,
       formattedAnswer = { answer: quantitativeAnswer || '' };
     } else if (isOpenParagraph) {
       formattedAnswer = { answer: openParagraphAnswer };
+    } else if (isDragDrop) {
+      formattedAnswer = { answer: dropAnswers };
     } else {
       formattedAnswer = { answer: { text: selectedAnswers[0].text, img: selectedAnswers[0].img } };
     }
@@ -137,7 +156,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer,
     <View style={styles.container}>
       <Text style={styles.questionText}>{question.test_question_data.description.text}</Text>
       {renderOptions()}
-      <Button title={isLastQuestion ? "Завершить" : "Ответить"} onPress={submitAnswer} />
+      <Button title={isLastQuestion ? 'Завершить' : 'Ответить'} onPress={submitAnswer} />
     </View>
   );
 };

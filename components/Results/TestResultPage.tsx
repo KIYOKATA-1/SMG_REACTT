@@ -1,4 +1,3 @@
-// TestResultPage.tsx
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import {
@@ -13,6 +12,7 @@ import MultipleResult from '../../components/Results/MultipleResult';
 import MatchResult from '../../components/Results/MatchResult';
 import QuantitativeResult from '../../components/Results/QuantitativeResult';
 import OpenParagraphResult from '../../components/Results/OpenParagraphResult';
+import DragDropResult from '../../components/Results/DragDropResult';
 
 interface TestResultPageProps {
   testResult: IUserTestResults;
@@ -25,11 +25,11 @@ const TestResultPage: React.FC<TestResultPageProps> = ({ testResult, navigation 
   const getColorByStatus = (status: FlagType) => {
     switch (status) {
       case FlagType.CORRECT:
-        return '#33AC72';
+        return '#33AC72'; // Зеленый для правильных ответов
       case FlagType.INCORRECT:
-        return '#F15C5C';
+        return '#F15C5C'; // Красный для неправильных ответов
       case FlagType.SEMI_CORRECT:
-        return '#FF984D';
+        return '#FF984D'; // Оранжевый для частично правильных ответов
       default:
         return 'transparent';
     }
@@ -49,6 +49,8 @@ const TestResultPage: React.FC<TestResultPageProps> = ({ testResult, navigation 
         return <QuantitativeResult question={question} />;
       case QuestionType.OpenParagraph:
         return <OpenParagraphResult question={question} />;
+      case QuestionType.DragDrop:
+        return <DragDropResult question={question} />;
       default:
         return <Text>Тип вопроса не поддерживается.</Text>;
     }

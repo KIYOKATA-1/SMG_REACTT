@@ -36,9 +36,14 @@ export const ProfileStyle = StyleSheet.create({
     borderColor: '#0C0E2B',
   },
   userData: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 15,
+  },
+  expandedUserData: {
     flexDirection: 'column',
-    alignItems: 'flex-end',
-    gap: 5,
+    alignItems: 'flex-start',
+    gap: 10,
   },
   username: {
     fontSize: 20,
@@ -81,11 +86,16 @@ export const ProfileStyle = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-  groupImage:{
+  groupImage: {
     height: 40,
-     width: 80, 
-     objectFit: 'contain',
-     position: 'relative',
+    width: 80,
+    objectFit: 'contain',
+    position: 'relative',
     marginVertical: 5,
-  }
+  },
+  phone: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: 'thin',
+  },
 });

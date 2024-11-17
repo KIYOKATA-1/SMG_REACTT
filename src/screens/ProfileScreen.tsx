@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   View, Text, FlatList, 
   ActivityIndicator, Alert, TouchableOpacity, 
-  SafeAreaView, Image
+  SafeAreaView, Image, LayoutAnimation, UIManager, Platform
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -21,7 +21,7 @@ interface UserData {
   last_name: string;
   phone: string;
   role: number;
-  coins: number;
+  username: string;
 }
 
 interface Product {
@@ -30,10 +30,17 @@ interface Product {
   course: number[];
 }
 
+if (Platform.OS === 'android') {
+  UIManager.setLayoutAnimationEnabledExperimental &&
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
 const ProfileScreen = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   useEffect(() => {
@@ -44,19 +51,18 @@ const ProfileScreen = () => {
           Alert.alert('Ошибка', 'Сессия не найдена. Пожалуйста, войдите заново.');
           return;
         }
-  
+
         const parsedSession = JSON.parse(session);
-        const token = parsedSession.key; // Извлекаем токен из объекта сессии
-  
+        const token = parsedSession.key;
+
         await fetchData(token);
       } catch (error) {
         Alert.alert('Ошибка', 'Не удалось получить сессию.');
       }
     };
-  
+
     fetchTokenAndData();
   }, []);
-  
 
   const fetchData = async (token: string) => {
     try {
@@ -72,8 +78,9 @@ const ProfileScreen = () => {
         }
       );
       setProducts(productsResponse.data.results);
-    } catch (error) {
-      Alert.alert('Ошибка', 'Не удалось загрузить данные.');
+    } catch (error: any) {
+      console.error('Ошибка при загрузке данных:', error.response?.data || error.message);
+      Alert.alert('Ошибка', 'Не удалось загрузить данные. Проверьте интернет-подключение.');
     } finally {
       setLoading(false);
     }
@@ -96,6 +103,11 @@ const ProfileScreen = () => {
     navigation.navigate('ProductDetails', { courseIds });
   };
 
+  const toggleExpand = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setIsExpanded((prev) => !prev);
+  };
+
   if (loading) {
     return <ActivityIndicator size="large" style={ProfileStyle.loader} />;
   }
@@ -104,35 +116,54 @@ const ProfileScreen = () => {
     <SafeAreaView style={ProfileStyle.container}>
       <View style={ProfileStyle.profileContainer}>
         {userData ? (
-          <View style={ProfileStyle.userInfo}>
-            <Image source={IMAGES.MIRUM_LOGO} style={ProfileStyle.logo} />
-            <View style={ProfileStyle.userData}>
+          <TouchableOpacity
+            style={[
+              ProfileStyle.userInfo,
+              isExpanded && { height: 200, flexDirection: 'column', alignItems: 'flex-start' },
+            ]}
+            onPress={toggleExpand}
+          >
+            {isExpanded && (
+              <Image 
+                source={IMAGES.MIRUM_LOGO} 
+                style={{ width: 140, resizeMode: 'contain', height: 70, marginBottom: 10 }} 
+              />
+            )}
+            <View style={isExpanded ? ProfileStyle.expandedUserData : ProfileStyle.userData}>
               <Text style={ProfileStyle.username}>
                 {userData.first_name} {userData.last_name}
               </Text>
               <Text style={ProfileStyle.role}>{getRoleText(userData.role)}</Text>
-              <Text style={ProfileStyle.coins}>ED COINS: {userData.coins}</Text>
+              {isExpanded && (
+                <>
+                  <Text style={ProfileStyle.phone}>{userData.phone}</Text>
+                </>
+              )}
             </View>
-          </View>
+          </TouchableOpacity>
         ) : (
           <Text>Загрузка данных пользователя...</Text>
         )}
-        <FlatList
-          data={products}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={ProfileStyle.productItem}
-              onPress={() => handleProductPress(item.course)}
-            >
-              <Text style={ProfileStyle.course}>{item.name}</Text>
-              <View style={ProfileStyle.productInfo}>
-                <Image source={IMAGES.GROUP} style={ProfileStyle.groupImage} />
-                <Text style={ProfileStyle.studentCount}>+ 25 студентов</Text>
-              </View>
-            </TouchableOpacity>
-          )}
-        />
+        <View style={ProfileStyle.sbjctList}>
+          <FlatList
+            data={products}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={ProfileStyle.productItem}
+                onPress={() => handleProductPress(item.course)}
+              >
+                <Text style={ProfileStyle.course}>{item.name}</Text>
+                <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <Image source={IMAGES.GROUP} style={ProfileStyle.groupImage} />
+                  <Text style={{ fontSize: 14, fontWeight: 'thin', color: '#fff' }}>
+                    + 25 студентов
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
       </View>
     </SafeAreaView>
   );

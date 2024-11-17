@@ -125,14 +125,14 @@ export interface ITestQuestions {
   test?: number;
   is_math?: boolean
 }
-
 export type UserAnswer =
-  { answer: { text: string; img: string } } // SingleSelect
-  | { answer: { text: string; img: string }[] } // MultipleSelect
+  | { answer: { text: string; img?: string } } // SingleSelect
+  | { answer: { text: string; img?: string }[] } // MultipleSelect (объекты в массиве)
   | { answer: string } // ShortOpen, OpenParagraph, QuantitativeCharacteristics
-  | { answer: string[] } // MultipleSelect as array
-  | { answer: { [key: string]: string } } // Match
-  | { answer: { [key: string]: string[] } }; // DragDrop
+  | { answer: string[] } // MultipleSelect (строки в массиве)
+  | { answer: Record<string, string> } // Match (ключ-значение)
+  | { answer: Record<string, string[]> }; // DragDrop (ключ-массив значений)
+
 
 
 export interface IUserTestResults {

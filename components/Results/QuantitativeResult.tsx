@@ -1,113 +1,69 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { QuantitativeCharacteristicsQuestion, UserTestResultQuestions } from '../../services/test/test.types';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { UserTestResultQuestions, QuantitativeCharacteristicsQuestion } from '../../services/test/test.types';
 
-interface QuantitativeResultProps {
-  question: UserTestResultQuestions;
-}
-
-const QuantitativeResult: React.FC<QuantitativeResultProps> = ({ question }) => {
+const QuantitativeResult: React.FC<{ question: UserTestResultQuestions }> = ({ question }) => {
   const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
 
+  if (!question || !question.user_answer || !question.correct_answer) {
+    return <Text style={styles.errorText}>Данные недоступны</Text>;
+  }
+
   const quantitativeQuestion = question.test_question_data as QuantitativeCharacteristicsQuestion;
-
-  // User's answer
-  const userAnswer = typeof question.user_answer.answer === 'string' ? question.user_answer.answer : '';
-
-  // Correct answer
-  const correctAnswer = typeof question.correct_answer.answer === 'string' ? question.correct_answer.answer : '';
+  const userAnswer = question.user_answer?.answer as string;
+  const correctAnswer = question.correct_answer?.answer as string;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Ваш ответ:</Text>
-      <View style={styles.optionsContainer}>
-        {quantitativeQuestion.options.options.map((option, index) => {
-          const isCorrect = option === correctAnswer;
-          const isSelected = option === userAnswer;
-          return (
-            <View
-              key={index}
-              style={[
-                styles.option,
-                isSelected
-                  ? isCorrect
-                    ? styles.correctOption
-                    : styles.incorrectOption
-                  : styles.defaultOption,
-              ]}
-            >
-              <Text style={styles.optionText}>{option}</Text>
-            </View>
-          );
-        })}
-      </View>
+      <Text style={styles.sectionHeader}>Ваш ответ:</Text>
+      {quantitativeQuestion.options.options.map((option, index) => {
+        const isSelected = userAnswer === option;
+        const isCorrect = correctAnswer === option;
 
-      <TouchableOpacity onPress={() => setShowCorrectAnswer(!showCorrectAnswer)}>
-        <Text style={styles.toggleButton}>
+        return (
+          <View
+            key={index}
+            style={[
+              styles.optionContainer,
+              isSelected ? (isCorrect ? styles.correct : styles.incorrect) : styles.defaultOption,
+            ]}
+          >
+            <Text style={styles.optionText}>{option}</Text>
+          </View>
+        );
+      })}
+
+      <TouchableOpacity style={styles.toggleButton} onPress={() => setShowCorrectAnswer(!showCorrectAnswer)}>
+        <Text style={styles.toggleButtonText}>
           {showCorrectAnswer ? 'Скрыть правильный ответ' : 'Показать правильный ответ'}
         </Text>
       </TouchableOpacity>
+
       {showCorrectAnswer && (
-        <View style={styles.correctAnswerContainer}>
-          <Text style={styles.correctAnswerText}>{correctAnswer}</Text>
-        </View>
+        <>
+          <Text style={styles.sectionHeader}>Правильный ответ:</Text>
+          <View style={styles.correctAnswerContainer}>
+            <Text style={styles.correctAnswerText}>{correctAnswer || 'Нет данных'}</Text>
+          </View>
+        </>
       )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 10,
-    backgroundColor: '#1B1423',
-    borderRadius: 8,
-  },
-  header: {
-    fontSize: 18,
-    color: 'white',
-    marginBottom: 8,
-  },
-  optionsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-start',
-    marginBottom: 10,
-  },
-  option: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 4,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  correctOption: {
-    backgroundColor: '#33AC72',
-  },
-  incorrectOption: {
-    backgroundColor: '#F15C5C',
-  },
-  defaultOption: {
-    backgroundColor: '#130F18',
-  },
-  optionText: {
-    color: 'white',
-    fontSize: 16,
-  },
-  toggleButton: {
-    color: '#FFD700',
-    fontSize: 16,
-    textDecorationLine: 'underline',
-  },
-  correctAnswerContainer: {
-    backgroundColor: '#33AC72',
-    padding: 8,
-    borderRadius: 4,
-    marginTop: 8,
-  },
-  correctAnswerText: {
-    color: 'white',
-    fontSize: 16,
-  },
+  container: { padding: 10, backgroundColor: '#1B1423', borderRadius: 6, marginVertical: 10 },
+  sectionHeader: { fontSize: 18, color: 'white', marginBottom: 10 },
+  optionContainer: { padding: 10, marginVertical: 5, borderRadius: 5 },
+  correct: { backgroundColor: '#33AC72' },
+  incorrect: { backgroundColor: '#F15C5C' },
+  defaultOption: { backgroundColor: '#130F18' },
+  optionText: { color: 'white', fontSize: 16 },
+  toggleButton: { marginTop: 10, padding: 10, backgroundColor: '#4A4A6A', borderRadius: 5, alignItems: 'center' },
+  toggleButtonText: { color: 'white', fontSize: 16 },
+  correctAnswerContainer: { marginTop: 10, padding: 10, backgroundColor: '#33AC72', borderRadius: 5 },
+  correctAnswerText: { color: 'white', fontSize: 16, textAlign: 'center' },
+  errorText: { color: '#FF6347', textAlign: 'center', fontSize: 16 },
 });
 
 export default QuantitativeResult;

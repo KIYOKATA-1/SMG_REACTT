@@ -66,48 +66,59 @@ const TestPage: React.FC<TestPageProps> = ({ route, navigation }) => {
   }, [getSession, testId]);
   
 
-  const handleAnswerSubmission = useCallback(
-    async (answer: UserAnswer) => {
-      if (!session || !testData || !userTestId) return;
+const handleAnswerSubmission = useCallback(
+  async (answer: UserAnswer) => {
+    if (!session || !testData || !userTestId) return;
 
-      try {
-        const currentQuestion = testData.results[currentQuestionIndex];
-        await TestService.answerTestQuestion(session, currentQuestion.id, answer);
+    try {
+      const currentQuestion = testData.results[currentQuestionIndex];
+      const questionType = currentQuestion.test_question_data.question_type;
 
-        setTestData((prevData) => {
-          if (!prevData) return prevData;
+      // Отправка ответа
+      await TestService.answerTestQuestion(
+        session,
+        currentQuestion.id,
+        answer,
+        questionType
+      );
 
-          const updatedResults = prevData.results.map((q) =>
-            q.id === currentQuestion.id
-              ? { ...q, is_answered: true, user_answer: answer }
-              : q
-          );
+      // Обновление состояния текущего вопроса
+      setTestData((prevData) => {
+        if (!prevData) return prevData;
 
-          return { ...prevData, results: updatedResults };
-        });
+        const updatedResults = prevData.results.map((q) =>
+          q.id === currentQuestion.id
+            ? { ...q, is_answered: true, user_answer: answer }
+            : q
+        );
 
-        if (currentQuestionIndex === testData.results.length - 1) {
-          // Проверка перед завершением теста
-          const testResultData = await TestService.getTestResult(session, userTestId.toString());
-          if (!testResultData.is_ended) {
-            await TestService.endTest(session, userTestId);
-            await AsyncStorage.removeItem(`userTestId_${testId}`);
-            const result = await TestService.getTestResult(session, userTestId.toString());
-            setTestResult(result); // Переходим к отображению результата
-          } else {
-            setTestResult(testResultData); // Если тест завершен, отображаем результат
-          }
-        } else {
-          setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
-        }
-      } catch (error) {
-        console.error("Ошибка при отправке ответа:", error);
-        Alert.alert('Ошибка', 'Не удалось отправить ответ.');
+        return { ...prevData, results: updatedResults };
+      });
+
+      // Завершение теста
+      if (currentQuestionIndex === testData.results.length - 1) {
+        setLoading(true); // Локальный индикатор загрузки
+        const [endResponse, testResultData] = await Promise.all([
+          TestService.endTest(session, userTestId),
+          TestService.getTestResult(session, userTestId.toString()),
+        ]);
+
+        await AsyncStorage.removeItem(`userTestId_${testId}`);
+        setTestResult(testResultData);
+      } else {
+        setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
       }
-    },
-    [session, testData, currentQuestionIndex, userTestId]
-  );
+    } catch (error) {
+      console.error('Ошибка при отправке ответа:', error);
+      Alert.alert('Ошибка', 'Не удалось отправить ответ.');
+    } finally {
+      setLoading(false); // Отключение индикатора загрузки
+    }
+  },
+  [session, testData, currentQuestionIndex, userTestId]
+);
 
+  
   if (loading) {
     return (
       <View style={styles.loader}>

@@ -1,4 +1,4 @@
-import {IUserTestResults, QuestionWrapper, TestQuestion, TestWrapper, UserAnswer} from "../test/test.types";
+import {IUserTestResults, QuestionType, QuestionWrapper, TestQuestion, TestWrapper, UserAnswer} from "../test/test.types";
 import {ICourseInfiniteScroll, TestData} from "../course/course.types";
 
 
@@ -60,23 +60,44 @@ export class TestService {
     return await response.json() as TestWrapper;
   }
 
-  static async answerTestQuestion(token: string, question_answer_id: number, answer: UserAnswer) {
+  static async answerTestQuestion(
+    token: string,
+    question_answer_id: number,
+    answer: UserAnswer,
+    questionType?: QuestionType
+  ) {
+    let body;
+
+    if (questionType === QuestionType.DragDrop) {
+      body = JSON.stringify({
+        question_answer_id,
+        user_answer: answer.answer, // Для DragDrop отправляем user_answer как есть
+      });
+    } else {
+      body = JSON.stringify({
+        question_answer_id,
+        user_answer: answer, // Для других типов отправляем стандартный ответ
+      });
+    }
+
+    console.log("Отправляемое тело:", body);
+
     const response = await fetch(`${BACKEND_URL}/courses/tests/answer/`, {
       method: 'PATCH',
       headers: {
         'Authorization': `Token ${token}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        question_answer_id: question_answer_id,
-        user_answer: answer
-      }),
+      body,
     });
-    if (response.status !== 200) {
-      throw new Error('Error while answering question');
-    } else {
-      return await response.json() as TestWrapper
+
+    if (!response.ok) {
+      const errorResponse = await response.text();
+      console.error('Ошибка ответа:', errorResponse);
+      throw new Error(`Error while answering question: ${errorResponse}`);
     }
+
+    return await response.json();
   }
   static async changeScoreForAnswer(token: string, answer_id: number, score_for_answer: string) {
     const response = await fetch(`${BACKEND_URL}/courses/tests/user/answer/${answer_id}/`, {

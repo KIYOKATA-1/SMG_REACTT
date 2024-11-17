@@ -1,49 +1,38 @@
 import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { UserTestResultQuestions } from '../../services/test/test.types';
 
-interface ShortOpenResultProps {
-  question: UserTestResultQuestions;
-}
-
-const ShortOpenResult: React.FC<ShortOpenResultProps> = ({ question }) => {
+const ShortOpenResult: React.FC<{ question: UserTestResultQuestions }> = ({ question }) => {
   const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
 
-  const isShortOpenCorrect =
-    typeof question.user_answer.answer === 'string' &&
-    typeof question.correct_answer.answer === 'string' &&
-    question.user_answer.answer.trim().toLowerCase() === question.correct_answer.answer.trim().toLowerCase();
+  if (!question || !question.user_answer || !question.correct_answer) {
+    return <Text style={styles.errorText}>Данные недоступны</Text>;
+  }
 
-  const userAnswer =
-    typeof question.user_answer.answer === 'string'
-      ? question.user_answer.answer
-      : 'Неверный формат ответа';
+  const userAnswer = typeof question.user_answer.answer === 'string' ? question.user_answer.answer : 'Ответ отсутствует';
+  const correctAnswer = typeof question.correct_answer.answer === 'string' ? question.correct_answer.answer : 'Нет данных';
 
-  const correctAnswer =
-    typeof question.correct_answer.answer === 'string'
-      ? question.correct_answer.answer
-      : 'Правильный ответ недоступен';
+  const isCorrect = userAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
 
   return (
     <View style={styles.container}>
-      <View style={styles.answerContainer}>
-        <Text style={styles.headerText}>Ваш ответ:</Text>
-        <Text
-          style={[
-            styles.answerText,
-            isShortOpenCorrect ? styles.correctBackground : styles.incorrectBackground,
-          ]}
-        >
-          {userAnswer}
-        </Text>
+      <Text style={styles.sectionHeader}>Ваш ответ:</Text>
+      <View style={[styles.answerContainer, isCorrect ? styles.correctAnswerBox : styles.incorrectAnswerBox]}>
+        <Text style={styles.answerText}>{userAnswer}</Text>
       </View>
-      <Button
-        title={showCorrectAnswer ? 'Скрыть правильный ответ' : 'Показать правильный ответ'}
-        onPress={() => setShowCorrectAnswer(!showCorrectAnswer)}
-      />
+
+      <TouchableOpacity style={styles.toggleButton} onPress={() => setShowCorrectAnswer(!showCorrectAnswer)}>
+        <Text style={styles.toggleButtonText}>
+          {showCorrectAnswer ? 'Скрыть правильный ответ' : 'Показать правильный ответ'}
+        </Text>
+      </TouchableOpacity>
+
       {showCorrectAnswer && (
         <View style={styles.correctAnswerContainer}>
-          <Text style={styles.correctAnswerText}>{correctAnswer}</Text>
+          <Text style={styles.sectionHeader}>Правильный ответ:</Text>
+          <View style={styles.correctAnswerBox}>
+            <Text style={styles.answerText}>{correctAnswer}</Text>
+          </View>
         </View>
       )}
     </View>
@@ -51,41 +40,16 @@ const ShortOpenResult: React.FC<ShortOpenResultProps> = ({ question }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'column',
-    gap: 10,
-    marginBottom: 20,
-  },
-  answerContainer: {
-    marginBottom: 10,
-  },
-  headerText: {
-    fontSize: 18,
-    color: 'white',
-    marginBottom: 5,
-  },
-  answerText: {
-    color: 'white',
-    padding: 10,
-    borderRadius: 5,
-    textAlign: 'center',
-  },
-  correctBackground: {
-    backgroundColor: '#33AC72',
-  },
-  incorrectBackground: {
-    backgroundColor: '#F15C5C',
-  },
-  correctAnswerContainer: {
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: '#33AC72',
-    borderRadius: 5,
-  },
-  correctAnswerText: {
-    color: 'white',
-    textAlign: 'center',
-  },
+  container: { padding: 10, backgroundColor: '#1B1423', borderRadius: 6, marginVertical: 10 },
+  sectionHeader: { fontSize: 18, color: 'white', marginBottom: 10 },
+  answerContainer: { padding: 10, borderRadius: 5 },
+  correctAnswerBox: { backgroundColor: '#33AC72' },
+  incorrectAnswerBox: { backgroundColor: '#F15C5C' },
+  answerText: { color: 'white', fontSize: 16, textAlign: 'center' },
+  toggleButton: { marginTop: 10, padding: 10, backgroundColor: '#4A4A6A', borderRadius: 5, alignItems: 'center' },
+  toggleButtonText: { color: 'white', fontSize: 16 },
+  correctAnswerContainer: { marginTop: 10 },
+  errorText: { color: '#FF6347', textAlign: 'center', fontSize: 16 },
 });
 
 export default ShortOpenResult;
