@@ -1,9 +1,10 @@
-import { TestData } from "../course.types";
+import {TestData} from "../course/course.types";
 
 export interface TestWrapper {
   count: number;
   next: string | null;
   previous: string | null;
+  // user_test: number;
   results: ITestQuestions[];
 }
 
@@ -11,6 +12,7 @@ export interface QuestionWrapper {
   count: number;
   next: string | null;
   previous: string | null;
+  // user_test: number;
   results: TestQuestion[];
 }
 
@@ -22,7 +24,7 @@ export interface BaseQuestion {
     column1?: string | null;
     column2?: string | null;
     paragraph?: string | null;
-    mathText?: string | null;
+    mathText?: string | null
   };
   question_type: QuestionType;
   score: number;
@@ -32,7 +34,7 @@ export interface BaseQuestion {
   test?: number | null;
   video?: string;
   image?: string;
-  is_math?: boolean;
+  is_math?: boolean
 }
 
 export enum QuestionType {
@@ -42,7 +44,7 @@ export enum QuestionType {
   ShortOpen = 3,
   DragDrop = 4,
   OpenParagraph = 5,
-  QuantitativeCharacteristics = 6,
+  QuantitativeCharacteristics = 6
 }
 
 export type MatchAnswers = { [key: string]: string };
@@ -51,15 +53,15 @@ export type DragDropAnswers = { [category: string]: string[] };
 export interface SingleSelectQuestion extends BaseQuestion {
   question_type: QuestionType.SingleSelect;
   options: {
-    options: { text: string; img?: string }[];
+    options: { text: string; img: string }[];
   };
-  answer: { answer: { text: string; img?: string } } | null;
+  answer: { answer: { text: string; img: string } } | null;
 }
 
 export interface MultipleSelectQuestion extends BaseQuestion {
   question_type: QuestionType.MultipleSelect;
-  options: { options: { text: string; img?: string }[] };
-  answer: { answer: { text: string; img?: string }[] } | null;
+  options: { options: { text: string; img: string }[] };
+  answer: { answer: { text: string; img: string }[] } | null;
 }
 
 export interface MatchQuestion extends BaseQuestion {
@@ -68,12 +70,12 @@ export interface MatchQuestion extends BaseQuestion {
     left: { [index: string]: { text: string; img: string } }[];
     right: { [index: string]: { text: string; img: string } }[];
   };
-  answer: MatchAnswers | {}; 
+  answer: MatchAnswers | {}; // User's matching answers
 }
 
 export interface ShortOpenQuestion extends BaseQuestion {
   question_type: QuestionType.ShortOpen;
-  answer: { answer: string } | null;
+  answer: { answer: string } | null; // User's textual answer
 }
 
 export interface DragDropQuestion extends BaseQuestion {
@@ -82,22 +84,22 @@ export interface DragDropQuestion extends BaseQuestion {
     categories: string[],
     options: { [index: string]: { text: string; img: string } }[];
   };
-  answer: DragDropAnswers | null;
+  answer: DragDropAnswers | null; // User's categorized items
 }
 
 export interface OpenParagraphQuestion extends BaseQuestion {
   question_type: QuestionType.OpenParagraph;
-  answer: { answer: string } | null;
+  answer: { answer: string } | null; // User's long textual answer
 }
 
 export interface QuantitativeCharacteristicsQuestion extends BaseQuestion {
   question_type: QuestionType.QuantitativeCharacteristics;
-  options: { options: string[] };
-  answer: { answer: string } | null;
+  options: { options: string[] };  // Usually "A", "B", "C", "D"
+  answer: { answer: string } | null; // User's selected option
 }
 
 export type TestQuestion =
-  | SingleSelectQuestion
+  SingleSelectQuestion
   | MultipleSelectQuestion
   | MatchQuestion
   | ShortOpenQuestion
@@ -106,7 +108,6 @@ export type TestQuestion =
   | QuantitativeCharacteristicsQuestion;
 
 export interface ITestQuestions {
-  correct_answer: {};
   checked: boolean | null;
   course: number | null;
   flag: FlagType;
@@ -122,33 +123,31 @@ export interface ITestQuestions {
   video?: string;
   image?: string;
   test?: number;
-  is_math?: boolean;
+  is_math?: boolean
 }
 
 export type UserAnswer =
-  | { answer: { text: string; img?: string } }
-  | { answer: { text: string; img?: string }[] }
-  | { answer: string }
-  | { answer: string[] }
-  | { answer: { [key: string]: string } }
-  | { answer: { text: string } };
+  { answer: { text: string; img: string } } // SingleSelect
+  | { answer: { text: string; img: string }[] } // MultipleSelect
+  | { answer: string } // ShortOpen, OpenParagraph, QuantitativeCharacteristics
+  | { answer: string[] } // MultipleSelect as array
+  | { answer: { [key: string]: string } } // Match
+  | { answer: { [key: string]: string[] } }; // DragDrop
+
 
 export interface IUserTestResults {
-  correct_count: number | string;
+  correct_count: number;
   ended_time: string;
   id: number;
   is_ended: boolean;
   order: number;
-  score: string | number;
+  score: string;
   test_data: TestData;
   user_data: {
     id: number;
     full_name: string;
   };
   user_answers: UserTestResultQuestions[];
-  total?: number;
-  amount?: number;
-  completion_percentage?: number;
 }
 
 export enum FlagType {
@@ -161,7 +160,7 @@ export enum FlagType {
 export interface UserTestResultQuestions {
   id: number;
   correct_answer: UserAnswer;
-  test_question_data: TestQuestion;
+  test_question_data: TestQuestion; // Use TestQuestion to ensure type coverage
   order: number;
   user_answer: UserAnswer;
   is_answered: boolean | null;

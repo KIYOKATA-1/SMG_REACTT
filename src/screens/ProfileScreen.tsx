@@ -21,6 +21,7 @@ interface UserData {
   last_name: string;
   phone: string;
   role: number;
+  coins: number;
 }
 
 interface Product {
@@ -33,35 +34,35 @@ const ProfileScreen = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isMenuVisible, setMenuVisible] = useState(false); 
-
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   useEffect(() => {
     const fetchTokenAndData = async () => {
       try {
-        const token = await AsyncStorage.getItem('token');
-        if (!token) {
-          Alert.alert('Ошибка', 'Токен не найден. Пожалуйста, войдите заново.');
+        const session = await AsyncStorage.getItem('session');
+        if (!session) {
+          Alert.alert('Ошибка', 'Сессия не найдена. Пожалуйста, войдите заново.');
           return;
         }
-
-        await fetchData(token); 
+  
+        const parsedSession = JSON.parse(session);
+        const token = parsedSession.key; // Извлекаем токен из объекта сессии
+  
+        await fetchData(token);
       } catch (error) {
-        console.error('Ошибка при получении токена:', error);
-        Alert.alert('Ошибка', 'Не удалось получить токен.');
+        Alert.alert('Ошибка', 'Не удалось получить сессию.');
       }
     };
-
+  
     fetchTokenAndData();
   }, []);
+  
 
   const fetchData = async (token: string) => {
     try {
       const userResponse = await axios.get<UserData>(`${BACKEND_URL}/user/`, {
         headers: { Authorization: `Token ${token}` },
       });
-      console.log('User Data:', userResponse.data);
       setUserData(userResponse.data);
 
       const productsResponse = await axios.get<{ results: Product[] }>(
@@ -70,11 +71,9 @@ const ProfileScreen = () => {
           headers: { Authorization: `Token ${token}` },
         }
       );
-      console.log('Products:', productsResponse.data.results);
       setProducts(productsResponse.data.results);
-    } catch (error: any) {
-      console.error('Ошибка при загрузке данных:', error.response?.data || error.message);
-      Alert.alert('Ошибка', 'Не удалось загрузить данные. Проверьте интернет-подключение.');
+    } catch (error) {
+      Alert.alert('Ошибка', 'Не удалось загрузить данные.');
     } finally {
       setLoading(false);
     }
@@ -97,9 +96,6 @@ const ProfileScreen = () => {
     navigation.navigate('ProductDetails', { courseIds });
   };
 
-  const openMenu = () => setMenuVisible(true);
-  const closeMenu = () => setMenuVisible(false);
-
   if (loading) {
     return <ActivityIndicator size="large" style={ProfileStyle.loader} />;
   }
@@ -109,18 +105,18 @@ const ProfileScreen = () => {
       <View style={ProfileStyle.profileContainer}>
         {userData ? (
           <View style={ProfileStyle.userInfo}>
-          <Image source={IMAGES.MIRUM_LOGO} style={{ width: 140, resizeMode: 'contain', height: 70, }} />
-          <View style={ProfileStyle.userData}>
-            <Text style={ProfileStyle.username}>
-              {userData.first_name} {userData.last_name}
-            </Text>
-            <Text style={ProfileStyle.role}>{getRoleText(userData.role)}</Text>
+            <Image source={IMAGES.MIRUM_LOGO} style={ProfileStyle.logo} />
+            <View style={ProfileStyle.userData}>
+              <Text style={ProfileStyle.username}>
+                {userData.first_name} {userData.last_name}
+              </Text>
+              <Text style={ProfileStyle.role}>{getRoleText(userData.role)}</Text>
+              <Text style={ProfileStyle.coins}>ED COINS: {userData.coins}</Text>
+            </View>
           </View>
-        </View>        
         ) : (
           <Text>Загрузка данных пользователя...</Text>
         )}
-        <View style={ProfileStyle.sbjctList}>
         <FlatList
           data={products}
           keyExtractor={(item) => item.id.toString()}
@@ -129,15 +125,14 @@ const ProfileScreen = () => {
               style={ProfileStyle.productItem}
               onPress={() => handleProductPress(item.course)}
             >
-                <Text style={ProfileStyle.course}>{item.name}</Text>
-                <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10}}>
-                  <Image source={IMAGES.GROUP} style={ProfileStyle.groupImage}/>
-                  <Text style={{fontSize: 14, fontWeight: 'thin', color: '#fff'}}>+ 25 студентов</Text>
-                </View>
+              <Text style={ProfileStyle.course}>{item.name}</Text>
+              <View style={ProfileStyle.productInfo}>
+                <Image source={IMAGES.GROUP} style={ProfileStyle.groupImage} />
+                <Text style={ProfileStyle.studentCount}>+ 25 студентов</Text>
+              </View>
             </TouchableOpacity>
           )}
         />
-        </View>
       </View>
     </SafeAreaView>
   );

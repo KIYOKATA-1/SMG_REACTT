@@ -4,10 +4,10 @@ import {
 } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faFilm, faFilePdf, faCheck, faGraduationCap } from '@fortawesome/free-solid-svg-icons';
-import { ContentData, ICourseWeek, TestData } from '../services/course.types';
+import { ContentData, ICourseWeek, TestData } from '../services/course/course.types';
 import { CourseStyle } from '../styles/Course';
 import { useSession } from '../lib/useSession';
-import { CourseService } from '../services/course.service';
+import { CourseService } from '../services/course/course.service';
 import ProgressBar from '../components/ProgressBar';
 import VideoPlayer from './VideoPlayer';
 import { WebView } from 'react-native-webview';

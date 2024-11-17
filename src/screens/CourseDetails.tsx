@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, SafeAreaView, Modal, ActivityIndicator, Alert } from 'react-native';
 import { useRoute, RouteProp } from '@react-navigation/native';
-import { CourseService } from '../../services/course.service';
-import { ICourseDetails, ContentData } from '../../services/course.types';
+import { CourseService } from '../../services/course/course.service';
+import { ICourseDetails, ContentData } from '../../services/course/course.types';
 import { CourseStyle } from '../../styles/Course';
 import { useSession } from '../../lib/useSession';
 import Week from '../../components/Week';

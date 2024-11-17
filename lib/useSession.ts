@@ -1,16 +1,18 @@
-import { ISession } from "../services/auth.types";
+import { ISession } from "../services/auth/auth.types";
 import { useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const useSession = () => {
   const saveSession = useCallback(async (session: ISession) => {
     try {
-      await AsyncStorage.setItem("session", JSON.stringify(session));
-      console.log("Сессия сохранена");
+      await AsyncStorage.setItem('session', JSON.stringify(session)); // Сохраняем всю сессию
+      await AsyncStorage.setItem('token', session.key); // Сохраняем токен отдельно
+      console.log('Сессия успешно сохранена:', session);
     } catch (error) {
-      console.error("Ошибка при сохранении сессии:", error);
+      console.error('Ошибка при сохранении сессии:', error);
     }
   }, []);
+  
 
   const getSession = useCallback(async (): Promise<ISession | null> => {
     try {

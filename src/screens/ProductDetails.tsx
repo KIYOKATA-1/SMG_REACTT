@@ -4,8 +4,8 @@ import {
   TouchableOpacity, SafeAreaView, Image, Linking 
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp, NavigationProp } from '@react-navigation/native';
-import { CourseService } from '../../services/course.service';
-import { ICourseDetails } from '../../services/course.types';
+import { CourseService } from '../../services/course/course.service';
+import { ICourseDetails } from '../../services/course/course.types';
 import { ProductStyle } from '../../styles/Product';
 import IMAGES from '../../assets/img/image';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';

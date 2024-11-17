@@ -12,16 +12,16 @@ import {
   Platform,
   ScrollView
 } from 'react-native';
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../../services/auth/auth.service';
 import { LoginStyle } from '../../styles/Login';
 import { MaskedTextInput } from 'react-native-mask-text';
 import IMAGES from '../../assets/img/image';
 import { useSession } from '../../lib/useSession';
 import { StackNavigationProp } from '@react-navigation/stack';
 
-// Определяем тип для стека навигации
 type RootStackParamList = {
   Login: undefined;
+  Profile: undefined;
   DrawerNavigator: undefined;
 };
 
@@ -49,23 +49,16 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     try {
       const response = await AuthService.login(username, password);
       if (response && response.key) {
+        console.log('Токен:', response.key); // Отладка
         await saveSession(response);
-        console.log('Сессия сохранена:', response.key);
-
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 500,
-          useNativeDriver: true,
-        }).start(() => {
-          navigation.replace('DrawerNavigator'); 
-        });
+        navigation.replace('DrawerNavigator');
       } else {
         throw new Error('Не удалось получить токен.');
       }
     } catch (error: unknown) {
       Alert.alert('Ошибка', error instanceof Error ? error.message : 'Произошла неизвестная ошибка.');
     }
-  }, [username, password, saveSession, fadeAnim, navigation]);
+  }, [username, password, saveSession, navigation]);
 
   return (
     <SafeAreaView style={LoginStyle.container}>
@@ -73,7 +66,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={{ flexGrow: 1}}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
           <Animated.View style={[LoginStyle.loginContainer, { opacity: fadeAnim }]}>
             <View style={LoginStyle.imageContainer}>
               <Image source={IMAGES.LOGIN_LOGO} style={LoginStyle.logo} />

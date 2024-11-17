@@ -12,7 +12,7 @@ export interface ICourse {
   students: {
     count: number;
     avatars: string[];
-  };
+  }
   order: number;
   name: string;
   type: number;
@@ -21,6 +21,7 @@ export interface ICourse {
   modules: number;
   length: number;
   image: string;
+  general_discount?: number;
 }
 
 export interface IUserCourse {
@@ -37,14 +38,14 @@ export interface IUserCourse {
   students: {
     count: number;
     avatars: string[];
-  };
+  }
   user?: number;
   teachers: ITeacher[];
 }
 
 export interface ICourseDetails {
   id: number;
-  teachers: ITeacher[];
+  teachers: ITeacher[]
   course_weeks?: ICourseWeek[];
   order: number;
   name: string;
@@ -55,7 +56,7 @@ export interface ICourseDetails {
   students: {
     count: number;
     avatars: string[];
-  };
+  }
 }
 
 export interface ITeacher {
@@ -82,7 +83,7 @@ export interface CourseWeekLessons {
   lesson_week: {
     id: number;
     order: number;
-  };
+  }
   name: string;
   test_data: TestData[];
   video_lessons_data: ContentData[];
@@ -105,25 +106,30 @@ export interface ContentData {
   video_1080?: string;
 }
 
+
 export interface TestData {
   week?: number;
   description: string;
   duration: number | null;
-  end_time?: string | null;
-  id?: number;
+  end_time?: string | null; // Optional
+  id?: number; // Optional
   is_visible: boolean;
   name: string;
-  order?: number;
-  question_count?: number;
-  score?: number;
-  start_time?: string | null;
+  order?: number; // Optional
+  question_count?: number; // Optional
+  score?: number; // Optional
+  start_time?: string | null; // Optional
   test_type: number;
   user_test_ended?: boolean | null;
   user_test_id?: number | null;
   course?: number;
   lesson?: number;
   is_superfinal?: boolean;
+  award_treshold?: number; // Optional
+  coins_award?: number; // Optional
+  user_coins_earned?: number; // Optional
 }
+
 
 export interface WeekTestData {
   description: string;
@@ -155,8 +161,8 @@ export interface ISuperFinal {
     id: number;
     full_name: string;
     phone?: string;
-    photo?: string | null;
-  };
+    photo?: string|null;
+  }
   courses?: {
     course_id: number;
     course_name: string;
@@ -167,7 +173,16 @@ export interface ISuperFinal {
   score: string;
   month: number;
   product: {
+    id:number;
+    name:string;
+  };
+}
+
+export interface WeekLessons {
+  id: number;
+  name: string;
+  lessons: {
     id: number;
     name: string;
-  };
+  }[]
 }

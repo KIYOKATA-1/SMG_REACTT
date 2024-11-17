@@ -1,6 +1,6 @@
 import {IProducts, IUserQuestion, IUserQuiz, IInfiniteScroll} from "./quiz.types";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL + '/en/api';
+const BACKEND_URL = 'https://api.smg.kz/en/api';
 
 
 export class QuizService {
@@ -33,7 +33,7 @@ export class QuizService {
       }),
     });
     if (response.status !== 200 && response.status !== 201) {
-      throw new Error('Error while starting quiz');
+      throw new Error('Error while starting quizzes');
     } else {
       return await response.json() as {
         user_quiz: IUserQuiz;
@@ -53,7 +53,7 @@ export class QuizService {
       }),
     });
     if (response.status !== 200) {
-      throw new Error('Error while starting quiz');
+      throw new Error('Error while starting quizzes');
     } else {
       return await response.json() as {
         user_quiz: IUserQuiz;
@@ -73,7 +73,7 @@ export class QuizService {
       }),
     });
     if (response.status !== 200) {
-      throw new Error('Error while starting quiz');
+      throw new Error('Error while starting quizzes');
     } else {
       return await response.json() as {
         user_quiz: IUserQuiz;

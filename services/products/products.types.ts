@@ -1,4 +1,4 @@
-import { IUserCourse } from "./course.types";
+import {IUserCourse} from "../course/course.types";
 
 export interface IInfiniteScrollOrders<T> {
   count: number;
@@ -40,8 +40,13 @@ export interface IProducts {
   price: number;
   file_image: string;
   quiz: number[];
-  is_subscription: boolean
+  is_subscription: boolean;
+  
+  general_discount?: number; // Процент скидки
+  general_discount_enabled?: boolean; // Флаг активности скидки
+  is_free: boolean; // Новый флаг бесплатного продукта
 }
+
 
 export interface IProductById {
   id: number;

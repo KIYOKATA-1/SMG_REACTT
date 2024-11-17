@@ -1,6 +1,6 @@
 import {KeyObject} from "crypto";
-import {ICourse} from "@/services/course/course.types";
-import {IDiscount} from "@/services/products/products.types";
+import {ICourse} from "../course/course.types";
+import {IDiscount} from "../products/products.types";
 
 export interface IQuizResult {
   "Рабочие": Record<string, number>;
@@ -31,12 +31,16 @@ export interface GallupResult {
     sub_categories: {
       name: string;
       score: number;
+      description: string;
     }[]
   }[]
 }
 
 export interface IUserBinaryQuiz extends Omit<IUserQuiz, 'result'> {
-  result: Record<string, number>
+  result: {
+    name: string;
+    score: number;
+  }[]
 }
 
 export interface IQuizQuestion {
@@ -103,4 +107,8 @@ export interface IProducts {
   start_date: string;
   end_date: string;
   is_open: boolean;
+  is_subscription: boolean; 
+  general_discount?: number;
+  general_discount_enabled?: boolean; 
+  is_free: boolean; 
 }
