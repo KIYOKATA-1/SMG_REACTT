@@ -1,0 +1,226 @@
+import React, { useState } from 'react';
+import { View, Text, Button, Alert, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import {
+  ITestQuestions,
+  QuestionType,
+  MatchQuestion,
+  DragDropQuestion,
+} from '../../services/test/test.types';
+import MatchAnswer from '../../components/Questions/MatchAnswer';
+import MultipleAnswer from '../../components/Questions/MultipleAnswer';
+import SingleAnswer from '../../components/Questions/SingleAnswer';
+import ShortOpenAnswer from '../../components/Questions/ShortOpenAnswer';
+import QuantitativeCharacteristicsAnswer from '../../components/Questions/QuantitativeCharacteristicsAnswer';
+import OpenParagraphAnswer from '../../components/Questions/OpenParagraphAnswer';
+import DragDropAnswer from '../../components/Questions/DragDropAnswer';
+
+interface QuestionRendererProps {
+  question: ITestQuestions;
+  onAnswer: (answer: any) => void;
+  isLastQuestion: boolean;
+}
+
+const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, onAnswer, isLastQuestion }) => {
+  const [selectedAnswers, setSelectedAnswers] = useState<{ text: string; img?: string }[]>([]);
+  const [matchResults, setMatchResults] = useState<{ [key: string]: string }>({});
+  const [dragDropResults, setDragDropResults] = useState<{ [key: string]: string[] }>({});
+  const [shortOpenAnswer, setShortOpenAnswer] = useState<string>('');
+  const [quantitativeAnswer, setQuantitativeAnswer] = useState<string | null>(null);
+  const [openParagraphAnswer, setOpenParagraphAnswer] = useState<string>('');
+
+  const isMultipleSelect = question.test_question_data.question_type === QuestionType.MultipleSelect;
+  const isMatch = question.test_question_data.question_type === QuestionType.Match;
+  const isShortOpen = question.test_question_data.question_type === QuestionType.ShortOpen;
+  const isQuantitative = question.test_question_data.question_type === QuestionType.QuantitativeCharacteristics;
+  const isOpenParagraph = question.test_question_data.question_type === QuestionType.OpenParagraph;
+  const isDragDrop = question.test_question_data.question_type === QuestionType.DragDrop;
+
+  const getOptions = () => {
+    const questionData = question.test_question_data;
+
+    if (
+      questionData.question_type === QuestionType.SingleSelect ||
+      questionData.question_type === QuestionType.MultipleSelect
+    ) {
+      return questionData.options?.options || [];
+    }
+
+    if (questionData.question_type === QuestionType.Match) {
+      return (questionData as MatchQuestion).options;
+    }
+
+    if (questionData.question_type === QuestionType.DragDrop) {
+      return (questionData as DragDropQuestion).options;
+    }
+
+    if (questionData.question_type === QuestionType.QuantitativeCharacteristics) {
+      return questionData.options;
+    }
+
+    return [];
+  };
+
+  const renderOptions = () => {
+    const options = getOptions();
+
+    if (isMatch && options && 'left' in options && 'right' in options) {
+      return (
+        <MatchAnswer
+          options={options}
+          setAnswer={setMatchResults}
+          answer={matchResults}
+        />
+      );
+    } else if (isShortOpen) {
+      return (
+        <ShortOpenAnswer
+          answer={{ answer: shortOpenAnswer }}
+          setAnswer={setShortOpenAnswer}
+        />
+      );
+    } else if (isQuantitative && 'options' in options) {
+      return (
+        <QuantitativeCharacteristicsAnswer
+          options={options as { options: string[] }}
+          setAnswer={(selectedAnswer) => setQuantitativeAnswer(selectedAnswer)}
+          answer={question.user_answer as { answer: string } | null}
+        />
+      );
+    } else if (isOpenParagraph) {
+      return (
+        <OpenParagraphAnswer
+          answer={{ answer: openParagraphAnswer }}
+          setAnswer={(text) => setOpenParagraphAnswer(text)}
+        />
+      );
+    } else if (isDragDrop) {
+      return (
+        <DragDropAnswer
+          options={options as DragDropQuestion['options']}
+          setAnswer={setDragDropResults}
+          answer={dragDropResults}
+        />
+      );
+    } else if (Array.isArray(options) && options.length > 0) {
+      return (
+        <FlatList
+          data={options}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[
+                styles.option,
+                selectedAnswers.some((answer) => answer.text === item.text) ? styles.selectedOption : {},
+              ]}
+              onPress={() => setSelectedAnswers([item])}
+            >
+              <Text style={styles.optionText}>{item.text}</Text>
+            </TouchableOpacity>
+          )}
+        />
+      );
+    } else {
+      return <Text>Опции не найдены для данного вопроса.</Text>;
+    }
+  };
+
+  const submitAnswer = () => {
+    if (
+      !isMatch &&
+      !isShortOpen &&
+      !isQuantitative &&
+      !isOpenParagraph &&
+      !isDragDrop &&
+      selectedAnswers.length === 0
+    ) {
+      Alert.alert('Ошибка', 'Выберите хотя бы один ответ перед отправкой.');
+      return;
+    }
+  
+    let formattedAnswer;
+    switch (question.test_question_data.question_type) {
+      case QuestionType.MultipleSelect:
+        formattedAnswer = {
+          question_answer_id: question.id,
+          user_answer: selectedAnswers.map((ans) => ans.text),
+        };
+        break;
+      case QuestionType.Match:
+        formattedAnswer = {
+          question_answer_id: question.id,
+          user_answer: matchResults,
+        };
+        break;
+      case QuestionType.DragDrop:
+        formattedAnswer = {
+          question_answer_id: question.id,
+          user_answer: dragDropResults,
+        };
+        break;
+      case QuestionType.ShortOpen:
+        formattedAnswer = {
+          question_answer_id: question.id,
+          user_answer: shortOpenAnswer,
+        };
+        break;
+      case QuestionType.QuantitativeCharacteristics:
+        formattedAnswer = {
+          question_answer_id: question.id,
+          user_answer: quantitativeAnswer || '',
+        };
+        break;
+      case QuestionType.OpenParagraph:
+        formattedAnswer = {
+          question_answer_id: question.id,
+          user_answer: openParagraphAnswer,
+        };
+        break;
+      default:
+        formattedAnswer = {
+          question_answer_id: question.id,
+          user_answer: selectedAnswers[0]?.text || '',
+        };
+    }
+  
+    console.log('Отправляемый ответ:', JSON.stringify(formattedAnswer));
+  
+    if (!formattedAnswer.user_answer || (Array.isArray(formattedAnswer.user_answer) && formattedAnswer.user_answer.length === 0)) {
+      Alert.alert('Ошибка', 'Ответ не может быть пустым.');
+      return;
+    }
+  
+    try {
+      onAnswer(formattedAnswer); // Отправляем обработанный ответ
+    } catch (error) {
+      console.error('Ошибка при отправке ответа:', error);
+      Alert.alert('Ошибка', 'Не удалось отправить ответ. Попробуйте позже.');
+    }
+  };
+  
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.questionText}>{question.test_question_data.description.text}</Text>
+      {renderOptions()}
+      <Button title={isLastQuestion ? 'Завершить' : 'Ответить'} onPress={submitAnswer} />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: { marginBottom: 20, padding: 10 },
+  questionText: { fontSize: 18, marginBottom: 10 },
+  option: {
+    padding: 15,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  selectedOption: {
+    backgroundColor: '#add8e6',
+  },
+  optionText: { fontSize: 16 },
+});
+
+export default QuestionRenderer;
