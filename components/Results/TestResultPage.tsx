@@ -13,6 +13,7 @@ import MatchResult from '../../components/Results/MatchResult';
 import QuantitativeResult from '../../components/Results/QuantitativeResult';
 import OpenParagraphResult from '../../components/Results/OpenParagraphResult';
 import DragDropResult from '../../components/Results/DragDropResult';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface TestResultPageProps {
   testResult: IUserTestResults;
@@ -62,7 +63,7 @@ const TestResultPage: React.FC<TestResultPageProps> = ({ testResult, navigation 
       : '0';
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.header}>Результаты теста</Text>
       <Text style={styles.percentageText}>
         Правильных ответов: {testResult.correct_count} / {testResult.user_answers.length}
@@ -97,12 +98,12 @@ const TestResultPage: React.FC<TestResultPageProps> = ({ testResult, navigation 
       )}
 
       <Button title="Назад к курсу" onPress={() => navigation.goBack()} />
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#1B1423' },
+  container: { flex: 1, padding: 20, backgroundColor: '#263546' },
   header: { fontSize: 24, fontWeight: 'bold', marginBottom: 10, color: 'white' },
   percentageText: { fontSize: 18, color: '#8B94A3', marginBottom: 10 },
   flagsContainer: {
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 6,
     padding: 15,
-    backgroundColor: '#2E2A3B',
+    backgroundColor: '#5C727D',
   },
   questionFlag: {
     width: 30,
