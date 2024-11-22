@@ -50,7 +50,9 @@ export const CourseStyle = StyleSheet.create({
     backgroundColor: '#202942',
     borderRadius: 8,
     overflow: 'hidden',
+    flex: 1, 
   },
+  
   weekHeader: {
     padding: 15,
     borderBottomWidth: 1,
@@ -68,23 +70,27 @@ export const CourseStyle = StyleSheet.create({
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#0C0E2B',
+    flexGrow: 1, 
     borderBottomRightRadius: 8,
     borderBottomLeftRadius: 8,
   },
+  
   lessonItem: {
     marginBottom: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start', 
+    gap: 10, 
   },
+  
   lessonText: {
     fontSize: 18,
     fontWeight: 'bold',
-    position: 'relative',
-    right: 10,
     color: '#000',
-    transform: [{ rotate: '-90deg' }],
+    marginRight: 10, 
+    textAlign: 'left', 
   },
+  
   contentWrapper: {
     borderWidth: 1,
     borderColor: '#263546',
@@ -101,10 +107,12 @@ export const CourseStyle = StyleSheet.create({
     marginVertical: 5,
     borderRadius: 8,
     backgroundColor: '#f5f5f5',
-    width: '100%',
     borderWidth: 1,
     borderColor: '#ddd',
+    width: '100%', 
+    flexWrap: 'nowrap', 
   },
+  
   buttonText: {
     fontSize: 16,
     color: '#000',

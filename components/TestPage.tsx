@@ -43,7 +43,6 @@ const TestPage: React.FC<TestPageProps> = ({ route, navigation }) => {
           }
         }
   
-        // Логика запуска нового теста, если он не был завершен
         if (savedUserTestId) {
           setUserTestId(parseInt(savedUserTestId, 10));
           const questions = await TestService.getTestQuestions(sessionData.key, savedUserTestId, null);
@@ -122,7 +121,7 @@ const handleAnswerSubmission = useCallback(
   if (loading) {
     return (
       <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="#263546" />
       </View>
     );
   }

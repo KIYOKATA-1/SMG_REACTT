@@ -93,4 +93,19 @@ export class CourseService {
       return await response.json() as ContentWrapper<ContentData>
     }
   }
+
+  static async getWeekProgress(token: string, weekId: number) {
+    const response = await fetch(`${BACKEND_URL}/courses/weeks/${weekId}/progress/`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Token ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      throw new Error('Error fetching week progress');
+    }
+    return await response.json() as { completion: number };
+  }
+  
 }

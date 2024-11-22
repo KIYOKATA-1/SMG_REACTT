@@ -116,7 +116,7 @@ const DragDropResult: React.FC<DragDropResultProps> = ({ question }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 10,
-    backgroundColor: '#1B1423',
+    backgroundColor: '#263546',
     borderRadius: 6,
     marginVertical: 10,
   },
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   toggleButton: {
     marginTop: 10,
     padding: 10,
-    backgroundColor: '#4A4A6A',
+    backgroundColor: '#202942',
     borderRadius: 5,
     alignItems: 'center',
   },

@@ -85,7 +85,7 @@ const OpenParagraphResult: React.FC<OpenParagraphResultProps> = ({ question, ref
 const styles = StyleSheet.create({
   container: {
     padding: 10,
-    backgroundColor: '#1B1423',
+    backgroundColor: '#263546',
     borderRadius: 8,
     marginBottom: 20,
   },
@@ -95,13 +95,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   answerContainer: {
-    backgroundColor: '#130F18',
+    backgroundColor: '#FFFF',
     padding: 10,
     borderRadius: 5,
     marginBottom: 15,
   },
   userAnswer: {
-    color: 'white',
+    color: '#202942',
     fontSize: 16,
   },
   scoreContainer: {

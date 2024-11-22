@@ -52,14 +52,14 @@ const QuantitativeResult: React.FC<{ question: UserTestResultQuestions }> = ({ q
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 10, backgroundColor: '#1B1423', borderRadius: 6, marginVertical: 10 },
+  container: { padding: 10, backgroundColor: '#263546', borderRadius: 6, marginVertical: 10 },
   sectionHeader: { fontSize: 18, color: 'white', marginBottom: 10 },
   optionContainer: { padding: 10, marginVertical: 5, borderRadius: 5 },
   correct: { backgroundColor: '#33AC72' },
   incorrect: { backgroundColor: '#F15C5C' },
-  defaultOption: { backgroundColor: '#130F18' },
+  defaultOption: { backgroundColor: '#000' },
   optionText: { color: 'white', fontSize: 16 },
-  toggleButton: { marginTop: 10, padding: 10, backgroundColor: '#4A4A6A', borderRadius: 5, alignItems: 'center' },
+  toggleButton: { marginTop: 10, padding: 10, backgroundColor: '#202942', borderRadius: 5, alignItems: 'center' },
   toggleButtonText: { color: 'white', fontSize: 16 },
   correctAnswerContainer: { marginTop: 10, padding: 10, backgroundColor: '#33AC72', borderRadius: 5 },
   correctAnswerText: { color: 'white', fontSize: 16, textAlign: 'center' },

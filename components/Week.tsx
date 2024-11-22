@@ -83,15 +83,47 @@ const Week: React.FC<WeekProps> = ({ week, courseId }) => {
     [getSession]
   );
 
-  const openVideo = (video: ContentData) => {
+  const startVideoLesson = useCallback(async (video: ContentData) => {
+    const session = await getSession();
+    if (!session || !video.id) return;
+  
+    try {
+      await CourseService.startLessonContent(session.key, video.id);
+    } catch (error) {
+      console.error('Ошибка начала видео:', error);
+    }
+  }, [getSession]);
+  
+  const endVideoLesson = useCallback(async (video: ContentData) => {
+    const session = await getSession();
+    if (!session || !video.id) return;
+  
+    try {
+      await CourseService.endLessonContent(session.key, video.id);
+      setCompletedLectures((prev) => {
+        const updated = new Set(prev);
+        updated.add(video.id);
+        return updated;
+      });
+    } catch (error) {
+      console.error('Ошибка завершения видео:', error);
+    }
+  }, [getSession]);
+  
+  const openVideo = async (video: ContentData) => {
+    await startVideoLesson(video);
     setSelectedVideo(video);
     setIsModalVisible(true);
   };
-
-  const closeVideo = () => {
+  
+  const closeVideo = async () => {
+    if (selectedVideo) {
+      await endVideoLesson(selectedVideo);
+    }
     setSelectedVideo(null);
     setIsModalVisible(false);
   };
+  
 
   const openPDF = (lecture: ContentData) => {
     setSelectedLecture(lecture);
@@ -135,89 +167,93 @@ const Week: React.FC<WeekProps> = ({ week, courseId }) => {
           </TouchableOpacity>
 
           {expanded && (
-            <View style={CourseStyle.lessonContainer}>
-              {week.lessons_data.map((lesson, index) => (
-                <React.Fragment key={lesson.id}>
-                  <View style={CourseStyle.lessonItem}>
-                    <Text style={CourseStyle.lessonText}>{index + 1} урок</Text>
-                    <View style={{ flex: 1, gap: 20, alignItems: 'center' }}>
-                      {lesson.lectures_data.map((lecture) => (
-                        <TouchableOpacity
-                          key={lecture.id}
-                          onPress={() => openPDF(lecture)}
-                          style={CourseStyle.buttonContainer}
-                        >
-                          <FontAwesomeIcon icon={faFilePdf} size={18} color="#000" />
-                          <Text style={CourseStyle.buttonText}>{lecture.name}</Text>
-                          <View style={CourseStyle.indicatorWrapper}>
-                            {completedLectures.has(lecture.id ?? 0) ? (
-                              <FontAwesomeIcon icon={faCheck} style={CourseStyle.checked} />
-                            ) : (
-                              <View style={CourseStyle.circle} />
-                            )}
-                          </View>
-                        </TouchableOpacity>
-                      ))}
-
-                      {lesson.video_lessons_data.map((video) => (
-                        <TouchableOpacity
-                          key={video.id}
-                          onPress={() => openVideo(video)}
-                          style={CourseStyle.buttonContainer}
-                        >
-                          <FontAwesomeIcon icon={faFilm} size={18} color="#000" />
-                          <Text style={CourseStyle.buttonText}>{video.name}</Text>
-                          <View style={CourseStyle.indicatorWrapper}>
-                            {completedLectures.has(video.id ?? 0) ? (
-                              <FontAwesomeIcon icon={faCheck} style={CourseStyle.checked} />
-                            ) : (
-                              <View style={CourseStyle.circle} />
-                            )}
-                          </View>
-                        </TouchableOpacity>
-                      ))}
-
-                      {lesson.test_data.map((test) => (
-                        <TouchableOpacity
-                          key={test.id}
-                          onPress={() => openTest(test)}
-                          style={CourseStyle.buttonContainer}
-                        >
-                          <FontAwesomeIcon icon={faGraduationCap} size={18} color="#000" />
-                          <Text style={CourseStyle.buttonText}>{test.name}</Text>
-                          <View style={CourseStyle.indicatorWrapper}>
-                            {completedLectures.has(test.id ?? 0) ? (
-                              <FontAwesomeIcon icon={faCheck} style={CourseStyle.checked} />
-                            ) : (
-                              <View style={CourseStyle.circle} />
-                            )}
-                          </View>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
+  <View style={CourseStyle.lessonContainer}>
+    <ScrollView style={{ maxHeight: 300 }} nestedScrollEnabled>
+      {week.lessons_data.map((lesson, index) => (
+        <React.Fragment key={lesson.id}>
+          <View style={CourseStyle.lessonItem}>
+            <Text style={CourseStyle.lessonText}>{index + 1} урок</Text>
+            <View style={{ flex: 1, gap: 20, alignItems: 'center' }}>
+              {lesson.lectures_data.map((lecture) => (
+                <TouchableOpacity
+                  key={lecture.id}
+                  onPress={() => openPDF(lecture)}
+                  style={CourseStyle.buttonContainer}
+                >
+                  <FontAwesomeIcon icon={faFilePdf} size={18} color="#000" />
+                  <Text style={CourseStyle.buttonText}>{lecture.name}</Text>
+                  <View style={CourseStyle.indicatorWrapper}>
+                    {completedLectures.has(lecture.id ?? 0) ? (
+                      <FontAwesomeIcon icon={faCheck} style={CourseStyle.checked} />
+                    ) : (
+                      <View style={CourseStyle.circle} />
+                    )}
                   </View>
-                  {index < week.lessons_data.length - 1 && (
-                    <View style={CourseStyle.divider} />
-                  )}
-                </React.Fragment>
+                </TouchableOpacity>
+              ))}
+
+              {lesson.video_lessons_data.map((video) => (
+                <TouchableOpacity
+                  key={video.id}
+                  onPress={() => openVideo(video)}
+                  style={CourseStyle.buttonContainer}
+                >
+                  <FontAwesomeIcon icon={faFilm} size={18} color="#000" />
+                  <Text style={CourseStyle.buttonText}>{video.name}</Text>
+                  <View style={CourseStyle.indicatorWrapper}>
+                    {completedLectures.has(video.id ?? 0) ? (
+                      <FontAwesomeIcon icon={faCheck} style={CourseStyle.checked} />
+                    ) : (
+                      <View style={CourseStyle.circle} />
+                    )}
+                  </View>
+                </TouchableOpacity>
+              ))}
+
+              {lesson.test_data.map((test) => (
+                <TouchableOpacity
+                  key={test.id}
+                  onPress={() => openTest(test)}
+                  style={CourseStyle.buttonContainer}
+                >
+                  <FontAwesomeIcon icon={faGraduationCap} size={18} color="#000" />
+                  <Text style={CourseStyle.buttonText}>{test.name}</Text>
+                  <View style={CourseStyle.indicatorWrapper}>
+                    {completedLectures.has(test.id ?? 0) ? (
+                      <FontAwesomeIcon icon={faCheck} style={CourseStyle.checked} />
+                    ) : (
+                      <View style={CourseStyle.circle} />
+                    )}
+                  </View>
+                </TouchableOpacity>
               ))}
             </View>
+          </View>
+          {index < week.lessons_data.length - 1 && (
+            <View style={CourseStyle.divider} />
           )}
+        </React.Fragment>
+      ))}
+    </ScrollView>
+  </View>
+)}
 
-          {selectedVideo && (
-            <Modal visible={isModalVisible} animationType="slide" onRequestClose={closeVideo}>
-              <VideoPlayer
-                videoData={{
-                  video_480: selectedVideo.video_480 || '',
-                  video_720: selectedVideo.video_720 || '',
-                  video_1080: selectedVideo.video_1080 || '',
-                }}
-                videoName={selectedVideo.name}
-                description={selectedVideo.description || ''}
-                onComplete={closeVideo}
-              />
-            </Modal>
-          )}
+
+{selectedVideo && (
+  <Modal visible={isModalVisible} animationType="slide" onRequestClose={closeVideo}>
+    <VideoPlayer
+      videoData={{
+        video_480: selectedVideo.video_480 || '',
+        video_720: selectedVideo.video_720 || '',
+        video_1080: selectedVideo.video_1080 || '',
+      }}
+      videoName={selectedVideo.name}
+      description={selectedVideo.description || ''}
+      onComplete={closeVideo}
+    />
+  </Modal>
+)}
+
 
           {selectedLecture && (
             <Modal visible={isPDFVisible} animationType="slide" onRequestClose={closePDF}>

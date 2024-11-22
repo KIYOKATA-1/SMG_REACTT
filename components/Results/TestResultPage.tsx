@@ -57,10 +57,14 @@ const TestResultPage: React.FC<TestResultPageProps> = ({ testResult, navigation 
     }
   };
 
+  const sortedAnswers = [...testResult.user_answers].sort((a, b) => a.order - b.order);
+
+
   const scorePercentage =
     testResult.correct_count && testResult.user_answers.length
       ? ((Number(testResult.correct_count) / testResult.user_answers.length) * 100).toFixed(1)
       : '0';
+  
 
   return (
     <SafeAreaView style={styles.container}>
@@ -71,21 +75,22 @@ const TestResultPage: React.FC<TestResultPageProps> = ({ testResult, navigation 
       <Text style={styles.percentageText}>Процент успешности: {scorePercentage}%</Text>
 
       <View style={styles.flagsContainer}>
-        {testResult.user_answers.map((item, index) => (
-          <TouchableOpacity
-            key={item.id}
-            style={[
-              styles.questionContainerSmall,
-              selectedQuestion?.id === item.id && styles.selectedQuestionContainer,
-            ]}
-            onPress={() => setSelectedQuestion(item)}
-          >
-            <View style={styles.questionFlag}>
-              <Text style={styles.questionNumber}>{index + 1}</Text>
-              <View style={[styles.flag, { backgroundColor: getColorByStatus(item.flag) }]} />
-            </View>
-          </TouchableOpacity>
-        ))}
+      {sortedAnswers.map((item, index) => (
+  <TouchableOpacity
+    key={item.id}
+    style={[
+      styles.questionContainerSmall,
+      selectedQuestion?.id === item.id && styles.selectedQuestionContainer,
+    ]}
+    onPress={() => setSelectedQuestion(item)}
+  >
+    <View style={styles.questionFlag}>
+      <Text style={styles.questionNumber}>{index + 1}</Text>
+      <View style={[styles.flag, { backgroundColor: getColorByStatus(item.flag) }]} />
+    </View>
+  </TouchableOpacity>
+))}
+
       </View>
 
       {selectedQuestion && (
@@ -97,13 +102,15 @@ const TestResultPage: React.FC<TestResultPageProps> = ({ testResult, navigation 
         </View>
       )}
 
-      <Button title="Назад к курсу" onPress={() => navigation.goBack()} />
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+        <Text style={styles.backBtnText}>Назад к курсу</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#263546' },
+  container: { flex: 1, padding: 20, backgroundColor: '#263546', gap: 20, },
   header: { fontSize: 24, fontWeight: 'bold', marginBottom: 10, color: 'white' },
   percentageText: { fontSize: 18, color: '#8B94A3', marginBottom: 10 },
   flagsContainer: {
@@ -145,6 +152,22 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginBottom: 10,
   },
+  backBtn:{
+    borderWidth: 1,
+    textAlign: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+    height: 40,
+    borderRadius: 15,
+    backgroundColor: '#f0f0f5',
+    display: 'flex',
+  },
+  backBtnText:{
+    fontSize:16,
+    textTransform: 'uppercase',
+    fontWeight: '700',
+  }
 });
 
 export default TestResultPage;

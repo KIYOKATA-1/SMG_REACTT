@@ -25,10 +25,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoData, onComplete }) => {
   };
 
   useEffect(() => {
-    if (videoUrls[quality]) {
-      setIsLoading(true);
+    if (!videoUrls[quality]) {
+      const fallbackQuality = Object.keys(videoUrls).find((q) => videoUrls[q as '480' | '720' | '1080']);
+      if (fallbackQuality) {
+        setQuality(fallbackQuality as '480' | '720' | '1080');
+      }
     }
   }, [quality]);
+  
 
   const handleLoad = (status: any) => {
     if (status.isLoaded) {
@@ -40,6 +44,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoData, onComplete }) => {
     console.error('Ошибка загрузки видео:', error);
   };
 
+  const handlePlaybackStatusUpdate = (status: any) => {
+    if (status.isLoaded) {
+      setIsLoading(false);
+    }
+    if (status.didJustFinish) {
+      onComplete();
+    }
+  };
+  
+
   return (
     <View style={styles.container}>
       <View style={styles.videoContainer}>
@@ -49,8 +63,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoData, onComplete }) => {
             source={{ uri: videoUrls[quality] }}
             style={styles.video}
             useNativeControls
-            resizeMode={ResizeMode.CONTAIN} 
-            onPlaybackStatusUpdate={handleLoad}
+            resizeMode={ResizeMode.CONTAIN}
+            onPlaybackStatusUpdate={handlePlaybackStatusUpdate} 
             onError={handleError}
           />
         ) : (
