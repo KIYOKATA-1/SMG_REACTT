@@ -18,6 +18,7 @@ import { MaskedTextInput } from 'react-native-mask-text';
 import IMAGES from '../../assets/img/image';
 import { useSession } from '../../lib/useSession';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { ISession } from '../../services/auth/auth.types';
 
 type RootStackParamList = {
   Login: undefined;
@@ -47,18 +48,45 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
   const handleLogin = useCallback(async () => {
     try {
-      const response = await AuthService.login(username, password);
+      const response: ISession = await AuthService.login(username, password); // Ожидаем ISession
       if (response && response.key) {
-        console.log('Токен:', response.key); // Отладка
+        console.log('Токен:', response.key);
+        console.log('Роль пользователя:', response.user.role);
+        console.log('Статус пользователя (is_offline):', response.user.is_offline);
+  
+        // Сохраняем сессию
         await saveSession(response);
-        navigation.replace('DrawerNavigator');
+  
+        // Проверяем роль пользователя и статус is_offline
+        if (response.user.role === 0) {
+          if (response.user.is_offline) {
+            navigation.replace('DrawerNavigator'); // Запускаем приложение
+          } else {
+            Alert.alert(
+              'Доступ запрещен',
+              'Для доступа обратитесь в ближайший филиал SMG Education.'
+            );
+          }
+        } else {
+          Alert.alert(
+            'Доступ запрещен',
+            'Приложение доступно только для учеников.'
+          );
+        }
       } else {
         throw new Error('Не удалось получить токен.');
       }
     } catch (error: unknown) {
-      Alert.alert('Ошибка', error instanceof Error ? error.message : 'Произошла неизвестная ошибка.');
+      if (typeof error === 'string') {
+        Alert.alert('Ошибка', error);
+      } else if (error instanceof Error) {
+        Alert.alert('Ошибка', error.message);
+      } else {
+        Alert.alert('Ошибка', 'Произошла неизвестная ошибка.');
+      }
     }
   }, [username, password, saveSession, navigation]);
+  
 
   return (
     <SafeAreaView style={LoginStyle.container}>

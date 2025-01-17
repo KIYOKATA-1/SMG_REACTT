@@ -6,25 +6,25 @@ const BACKEND_URL = 'https://api.smg.kz/en/api';
 
 export class AuthService {
 
-  static async login(username: string, password: string) {
+  static async login(username: string, password: string): Promise<ISession> {
     const response = await fetch(`${BACKEND_URL}/login/`, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({username, password}),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
     });
     const data = await response.json();
     if (response.status !== 200) {
       if ('non_field_errors' in data) {
-        console.log('error')
-        throw data.non_field_errors.join('\n') as string;
+        throw data.non_field_errors.join('\n');
       }
       if ('username' in data) {
-        throw data.username.join('\n') as string;
+        throw data.username.join('\n');
       }
       throw new Error('Error while logging in');
     }
     return data as ISession;
   }
+  
 
   static async register(first_name: string, phone: string, password1: string, password2: string) {
     const response = await fetch(`${BACKEND_URL}/registration/`, {
