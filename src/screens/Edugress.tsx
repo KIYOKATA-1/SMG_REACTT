@@ -6,28 +6,22 @@ import {
   SafeAreaView,
   StyleSheet,
   ScrollView,
-  Modal,
-  Pressable,
+  Animated,
 } from "react-native";
+import Svg, { Circle, G } from "react-native-svg";
 import { EdugressService } from "../../services/edugress/edugress.service";
 import { useSession } from "../../lib/useSession";
-import { LineChart } from "react-native-chart-kit";
-import { Dimensions } from "react-native";
 
-const screenWidth = Dimensions.get("window").width;
+const RADIUS = 50;
+const STROKE_WIDTH = 10;
+const CIRCLE_LENGTH = (radius: number) => 2 * Math.PI * radius;
 
 const EdugressScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [currentTestData, setCurrentTestData] = useState<any[]>([]);
   const [lastTestData, setLastTestData] = useState<any[]>([]);
-  const [currentTestMeta, setCurrentTestMeta] = useState<{ date: string }>({
-    date: "",
-  });
-  const [lastTestMeta, setLastTestMeta] = useState<{ date: string }>({
-    date: "",
-  });
-  const [selectedSubject, setSelectedSubject] = useState<any | null>(null); 
+  const [animationValues, setAnimationValues] = useState<Animated.Value[]>([]);
   const { getSession } = useSession();
 
   useEffect(() => {
@@ -59,21 +53,31 @@ const EdugressScreen = () => {
         const currentTest =
           progressResponse.current_test_data?.results?.map((item: any) => ({
             subject: item.name,
-            score: item.score_percent,
+            score: Math.round(item.score_percent),
           })) || [];
 
         const lastTest =
           progressResponse.last_test_data?.results?.map((item: any) => ({
             subject: item.name,
-            score: item.score_percent,
+            score: Math.round(item.score_percent),
           })) || [];
 
         setCurrentTestData(currentTest);
         setLastTestData(lastTest);
-        setCurrentTestMeta({
-          date: progressResponse.current_test_data?.date || "",
-        });
-        setLastTestMeta({ date: progressResponse.last_test_data?.date || "" });
+
+        const animations = currentTest.map(() => new Animated.Value(0));
+        setAnimationValues(animations);
+
+        Animated.stagger(
+          200,
+          animations.map((anim, index) =>
+            Animated.timing(anim, {
+              toValue: 1,
+              duration: 1500,
+              useNativeDriver: false,
+            })
+          )
+        ).start();
       } catch (err: any) {
         setError(err.message || "Ошибка при загрузке данных");
       } finally {
@@ -83,49 +87,6 @@ const EdugressScreen = () => {
 
     fetchTestResults();
   }, [getSession]);
-
-  const createChartData = () => {
-    const labels = currentTestData.map((item) =>
-      item.subject.length > 20
-        ? `${item.subject.slice(0, 20)}...`
-        : item.subject
-    );
-    const currentScores = currentTestData.map((item) => Math.round(item.score)); // Округление текущих процентов
-    const lastScores = lastTestData.map((item) => {
-      const lastTestSubject = lastTestData.find(
-        (sub) => sub.subject === item.subject
-      );
-      return lastTestSubject ? Math.round(lastTestSubject.score) : 0; 
-    });
-
-    return {
-      labels,
-      datasets: [
-        {
-          data: currentScores,
-          color: () => "rgba(134, 65, 244, 1)", 
-          strokeWidth: 2,
-        },
-        {
-          data: lastScores,
-          color: () => "rgba(244, 95, 65, 1)", 
-          strokeWidth: 2,
-        },
-      ],
-      legend: ["Текущий тест", "Последний тест"], 
-    };
-  };
-
-  const handleSubjectClick = (index: number) => {
-    const selectedCurrent = currentTestData[index];
-    const selectedLast = lastTestData.find(
-      (item) => item.subject === selectedCurrent.subject
-    ) || {
-      subject: selectedCurrent.subject,
-      score: 0,
-    };
-    setSelectedSubject({ current: selectedCurrent, last: selectedLast });
-  };
 
   if (loading) {
     return (
@@ -145,141 +106,156 @@ const EdugressScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
-        <View style={styles.section}>
-          <Text style={styles.title}>Результаты тестов:</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={true}>
-            <LineChart
-              data={createChartData()}
-              width={Math.max(screenWidth, currentTestData.length * 120)} 
-              height={300}
-              chartConfig={{
-                backgroundGradientFrom: "#ffffff",
-                backgroundGradientTo: "#ffffff",
-                color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                style: {
-                  borderRadius: 16,
-                },
-                propsForDots: {
-                  r: "5",
-                  strokeWidth: "5",
-                  stroke: "#ffa726",
-                },
-              }}
-              bezier
-              style={{
-                marginVertical: 16,
-                borderRadius: 16,
-              }}
-              fromZero
-              verticalLabelRotation={15} 
-              onDataPointClick={(data) => {
-                const { index } = data; 
-                handleSubjectClick(index);
-              }}
-            />
-          </ScrollView>
+      <View style={styles.legendContainer}>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendSquare, { backgroundColor: "#F2277E" }]} />
+          <Text style={{color: 'black', fontWeight: '600'}}>Текущий тест</Text>
         </View>
-      </ScrollView>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendSquare, { backgroundColor: "#9DE7BF" }]} />
+          <Text style={{color: 'black', fontWeight: '600'}}>Прошлый тест</Text>
+        </View>
+      </View>
+      <ScrollView horizontal style={styles.scrollContainer}>
+        {currentTestData.map((item, index) => {
+          const previousScore =
+            lastTestData.find((test) => test.subject === item.subject)?.score ||
+            0;
+          const currentScore = item.score;
 
-      {selectedSubject && (
-        <Modal
-          transparent={true}
-          animationType="slide"
-          visible={!!selectedSubject}
-          onRequestClose={() => setSelectedSubject(null)}
-        >
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Детали по предмету</Text>
-              <Text style={styles.modalSubject}>
-                {selectedSubject.current.subject}
-              </Text>
-              <Text style={styles.modalScore}>
-                Текущий тест: {Math.round(selectedSubject.current.score)}%
-              </Text>
-              <Text style={styles.modalScore}>
-                Последний тест: {Math.round(selectedSubject.last.score)}%
-              </Text>
+          const currentAnimatedOffset = animationValues[index]?.interpolate({
+            inputRange: [0, 1],
+            outputRange: [
+              CIRCLE_LENGTH(RADIUS),
+              CIRCLE_LENGTH(RADIUS) * (1 - currentScore / 100),
+            ],
+          });
 
-              <Pressable
-                style={styles.closeButton}
-                onPress={() => setSelectedSubject(null)}
-              >
-                <Text style={styles.closeButtonText}>Закрыть</Text>
-              </Pressable>
+          const previousAnimatedOffset = animationValues[index]?.interpolate({
+            inputRange: [0, 1],
+            outputRange: [
+              CIRCLE_LENGTH(RADIUS - STROKE_WIDTH - 5),
+              CIRCLE_LENGTH(RADIUS - STROKE_WIDTH - 5) *
+                (1 - previousScore / 100),
+            ],
+          });
+
+          return (
+            <View key={index} style={[styles.card, styles.cardSquare]}>
+              <Svg height="150" width="150">
+                <G rotation="-90" origin="75, 75">
+                  <Circle
+                    cx="75"
+                    cy="75"
+                    r={RADIUS}
+                    stroke="#e6e6e6"
+                    strokeWidth={STROKE_WIDTH}
+                    fill="transparent"
+                  />
+                  <AnimatedCircle
+                    cx="75"
+                    cy="75"
+                    r={RADIUS}
+                    stroke="#F2277E"
+                    strokeWidth={STROKE_WIDTH}
+                    fill="transparent"
+                    strokeDasharray={CIRCLE_LENGTH(RADIUS)}
+                    strokeDashoffset={currentAnimatedOffset}
+                    strokeLinecap="round"
+                  />
+                  <AnimatedCircle
+                    cx="75"
+                    cy="75"
+                    r={RADIUS - STROKE_WIDTH - 5}
+                    stroke="#9DE7BF"
+                    strokeWidth={STROKE_WIDTH}
+                    fill="transparent"
+                    strokeDasharray={CIRCLE_LENGTH(RADIUS - STROKE_WIDTH - 5)}
+                    strokeDashoffset={previousAnimatedOffset}
+                    strokeLinecap="round"
+                  />
+                </G>
+              </Svg>
+              <View style={{display: 'flex', flexDirection: 'column', gap: 10,}}>
+                  <Text style={styles.subjectText}>{item.subject}</Text>
+                  <Text style={styles.scoreText}>Текущий: {currentScore}%</Text>
+                  <Text style={styles.scoreText}>
+                    Прошлый: {previousScore}%
+                  </Text>
+                </View>
             </View>
-          </View>
-        </Modal>
-      )}
+          );
+        })}
+      </ScrollView>
     </SafeAreaView>
   );
 };
 
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#ffff",
   },
-  section: {
-    marginBottom: 24,
+  legendContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
     backgroundColor: "#fff",
-    borderRadius: 8,
-    elevation: 1,
-    borderWidth: 1,
-    borderColor: '#000'
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: "#e0e0e0",
   },
-  title: {
-    fontSize: 18,
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  svg:{
+    display: "flex",
+    flexDirection: 'column',
+    gap: 30,
+  },
+  legendSquare: {
+    width: 16,
+    height: 16,
+    marginRight: 8,
+  },
+  scrollContainer: {
+    marginTop: 10,
+    paddingVertical: 20,
+    paddingHorizontal: 10,
+  },
+  card: {
+    marginHorizontal: 8,
+    height: "auto",
+    display: 'flex',
+    padding: 16,
+    backgroundColor: "#263546",
+    borderRadius: 8,
+    elevation: 2,
+  },
+  cardSquare: {
+    width: 180,
+    height: 300,
+  },
+  subjectText: {
+    marginTop: 8,
+    color: "#FFFFFF",
+    fontSize: 14,
+    textAlign: "center",
+  },
+  scoreText: {
+    fontSize: 14,
     fontWeight: "bold",
-    marginBottom: 16,
+    color: "#FFFFFF",
+    textAlign: "center",
   },
   errorText: {
     color: "red",
     fontSize: 16,
     textAlign: "center",
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalContent: {
-    width: 300,
-    padding: 20,
-    backgroundColor: "white",
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 16,
-  },
-  modalSubject: {
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  modalScore: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  closeButton: {
-    marginTop: 20,
-    backgroundColor: "#ffa726",
-    padding: 10,
-    borderRadius: 8,
-  },
-  closeButtonText: {
-    color: "white",
-    fontWeight: "bold",
   },
 });
 

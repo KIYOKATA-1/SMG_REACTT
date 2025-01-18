@@ -11,11 +11,11 @@ import {
   faClockRotateLeft,
   faCartShopping,
   faBars,
+  faUserGraduate
 } from "@fortawesome/free-solid-svg-icons";
 import { TouchableOpacity, View, StyleSheet, Platform } from "react-native";
 import ProfileScreen from "@/screens/ProfileScreen";
 import TransactionsScreen from "@/screens/Transactions";
-import QuizzesScreen from "@/screens/Quizzes";
 import CourseDetailsScreen from "@/screens/CourseDetails";
 import ProductScreen from "@/screens/ProductDetails";
 import CustomDrawerContent from "./CurstomDrawerContent";
@@ -95,24 +95,12 @@ const DrawerNavigator = () => (
       }}
     />
     <Drawer.Screen
-      name="Quizzes"
-      component={QuizzesScreen}
-      options={{
-        drawerLabel: "Тесты",
-        drawerIcon: ({ size, color }) => (
-          <FontAwesomeIcon icon={faCartShopping} size={size} color={color} />
-        ),
-        drawerItemStyle: styles.drawerItem,
-        headerTintColor: "transparent",
-      }}
-    />
-    <Drawer.Screen
       name="Edugress"
       component={EdugressScreen}
       options={{
         drawerLabel: "Edugress",
         drawerIcon: ({ size, color }) => (
-          <FontAwesomeIcon icon={faCartShopping} size={size} color={color} />
+          <FontAwesomeIcon icon={faUserGraduate} size={size} color={color} />
         ),
         drawerItemStyle: styles.drawerItem,
         headerTintColor: "transparent",
