@@ -31,4 +31,20 @@ export class EdugressService {
 
     return await response.json();
   }
+
+  static async getExamResults(fileId: number, token: string) {
+    const response = await fetch(`${BACKEND_URL}/edugress/exams/${fileId}/main/`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Ошибка при получении результатов теста');
+    }
+
+    return await response.json();
+  }
 }

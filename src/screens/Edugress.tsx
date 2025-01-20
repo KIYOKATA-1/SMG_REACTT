@@ -12,6 +12,9 @@ import Svg, { Circle, G } from "react-native-svg";
 import { EdugressService } from "../../services/edugress/edugress.service";
 import { useSession } from "../../lib/useSession";
 import { ITestResult } from "../../services/edugress/edugress.types";
+import TestDetails from "../../components/TestDetails";
+import FilesDropdown from "../../components/FilesDropdown";
+import BarChart from "../../components/BarChart";
 
 const RADIUS = 50;
 const STROKE_WIDTH = 10;
@@ -25,6 +28,12 @@ const EdugressScreen = () => {
 
   const [animationValues, setAnimationValues] = useState<Animated.Value[]>([]);
   const { getSession } = useSession();
+
+  const [files, setFiles] = useState<{ id: number; name: string }[]>([]);
+  const [selectedFileId, setSelectedFileId] = useState<number | null>(null);
+  const [chartData, setChartData] = useState<
+    { name: string; avg_score_percent: number; avg_goal_percent: number }[]
+  >([]);
 
   useEffect(() => {
     const fetchTestResults = async () => {
@@ -96,6 +105,50 @@ const EdugressScreen = () => {
     fetchTestResults();
   }, [getSession]);
 
+  useEffect(() => {
+    const fetchFiles = async () => {
+      try {
+        setLoading(true);
+        const session = await getSession();
+        if (!session) throw new Error("Токен не найден");
+
+        const response = await EdugressService.getFiles(session.key);
+        setFiles(response.results || []);
+      } catch (error) {
+        console.error("Ошибка при загрузке файлов:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFiles();
+  }, []);
+
+  const handleFileSelect = async (fileId: number) => {
+    try {
+      setLoading(true);
+      const session = await getSession();
+      if (!session) throw new Error("Токен не найден");
+
+      const examResults = await EdugressService.getExamResults(
+        fileId,
+        session.key
+      );
+      const preparedData = examResults.grade_vs_average.map((item: any) => ({
+        name: item.name,
+        avg_score_percent: item.avg_score_percent,
+        avg_goal_percent: item.avg_goal_percent,
+      }));
+
+      setChartData(preparedData);
+      setSelectedFileId(fileId);
+    } catch (error) {
+      console.error("Ошибка при получении результатов теста:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -128,78 +181,93 @@ const EdugressScreen = () => {
           </Text>
         </View>
       </View>
-      <ScrollView horizontal style={styles.scrollContainer}>
-        {currentTestData.map((item, index) => {
-          const previousScore =
-            lastTestData.find((test) => test.name === item.name)?.score || 0; // Заменено subject на name
-          const currentScore = item.score;
+      <View style={{ paddingHorizontal: 20 }}>
+        <ScrollView horizontal contentContainerStyle={styles.centerContainer}>
+          {currentTestData.map((item, index) => {
+            const previousScore =
+              lastTestData.find((test) => test.name === item.name)?.score || 0;
+            const currentScore = item.score;
 
-          const currentAnimatedOffset = animationValues[index]?.interpolate({
-            inputRange: [0, 1],
-            outputRange: [
-              CIRCLE_LENGTH(RADIUS),
-              CIRCLE_LENGTH(RADIUS) * (1 - currentScore / 100),
-            ],
-          });
+            const currentAnimatedOffset = animationValues[index]?.interpolate({
+              inputRange: [0, 1],
+              outputRange: [
+                CIRCLE_LENGTH(RADIUS),
+                CIRCLE_LENGTH(RADIUS) * (1 - currentScore / 100),
+              ],
+            });
 
-          const previousAnimatedOffset = animationValues[index]?.interpolate({
-            inputRange: [0, 1],
-            outputRange: [
-              CIRCLE_LENGTH(RADIUS - STROKE_WIDTH - 5),
-              CIRCLE_LENGTH(RADIUS - STROKE_WIDTH - 5) *
-                (1 - previousScore / 100),
-            ],
-          });
+            const previousAnimatedOffset = animationValues[index]?.interpolate({
+              inputRange: [0, 1],
+              outputRange: [
+                CIRCLE_LENGTH(RADIUS - STROKE_WIDTH - 5),
+                CIRCLE_LENGTH(RADIUS - STROKE_WIDTH - 5) *
+                  (1 - previousScore / 100),
+              ],
+            });
 
-          return (
-            <View key={index} style={[styles.card, styles.cardSquare]}>
-              <Svg height="150" width="150">
-                <G rotation="-90" origin="75, 75">
-                  <Circle
-                    cx="75"
-                    cy="75"
-                    r={RADIUS}
-                    stroke="#e6e6e6"
-                    strokeWidth={STROKE_WIDTH}
-                    fill="transparent"
-                  />
-                  <AnimatedCircle
-                    cx="75"
-                    cy="75"
-                    r={RADIUS}
-                    stroke="#F2277E"
-                    strokeWidth={STROKE_WIDTH}
-                    fill="transparent"
-                    strokeDasharray={CIRCLE_LENGTH(RADIUS)}
-                    strokeDashoffset={currentAnimatedOffset}
-                    strokeLinecap="round"
-                  />
-                  <AnimatedCircle
-                    cx="75"
-                    cy="75"
-                    r={RADIUS - STROKE_WIDTH - 5}
-                    stroke="#9DE7BF"
-                    strokeWidth={STROKE_WIDTH}
-                    fill="transparent"
-                    strokeDasharray={CIRCLE_LENGTH(RADIUS - STROKE_WIDTH - 5)}
-                    strokeDashoffset={previousAnimatedOffset}
-                    strokeLinecap="round"
-                  />
-                </G>
-              </Svg>
-              <View
-                style={{ display: "flex", flexDirection: "column", gap: 10 }}
-              >
-                <Text style={styles.subjectText}>
-                  {item.name || "Неизвестный предмет"}
-                </Text>
-                <Text style={styles.scoreText}>Текущий: {currentScore}%</Text>
-                <Text style={styles.scoreText}>Прошлый: {previousScore}%</Text>
+            return (
+              <View key={index} style={[styles.card, styles.cardSquare]}>
+                <View style={styles.svgContainer}>
+                  <Svg height="150" width="150">
+                    <G rotation="-90" origin="75, 75">
+                      <Circle
+                        cx="75"
+                        cy="75"
+                        r={RADIUS}
+                        stroke="#e6e6e6"
+                        strokeWidth={STROKE_WIDTH}
+                        fill="transparent"
+                      />
+                      <AnimatedCircle
+                        cx="75"
+                        cy="75"
+                        r={RADIUS}
+                        stroke="#F2277E"
+                        strokeWidth={STROKE_WIDTH}
+                        fill="transparent"
+                        strokeDasharray={CIRCLE_LENGTH(RADIUS)}
+                        strokeDashoffset={currentAnimatedOffset}
+                        strokeLinecap="round"
+                      />
+                      <AnimatedCircle
+                        cx="75"
+                        cy="75"
+                        r={RADIUS - STROKE_WIDTH - 5}
+                        stroke="#9DE7BF"
+                        strokeWidth={STROKE_WIDTH}
+                        fill="transparent"
+                        strokeDasharray={CIRCLE_LENGTH(
+                          RADIUS - STROKE_WIDTH - 5
+                        )}
+                        strokeDashoffset={previousAnimatedOffset}
+                        strokeLinecap="round"
+                      />
+                    </G>
+                  </Svg>
+                </View>
+                <View style={styles.textContainer}>
+                  <Text style={styles.subjectText}>
+                    {item.name || "Неизвестный предмет"}
+                  </Text>
+                  <Text style={styles.scoreText}>Текущий: {currentScore}%</Text>
+                  <Text style={styles.scoreText}>
+                    Прошлый: {previousScore}%
+                  </Text>
+                </View>
               </View>
-            </View>
-          );
-        })}
-      </ScrollView>
+            );
+          })}
+        </ScrollView>
+
+        <View style={styles.chartContainer}>
+          <FilesDropdown
+            files={files}
+            onFileSelect={handleFileSelect}
+            selectedFileId={selectedFileId}
+          />
+          {chartData.length > 0 && <BarChart data={chartData} />}
+        </View>
+      </View>
     </SafeAreaView>
   );
 };
@@ -211,6 +279,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#ffff",
   },
+  svgContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    flex: 1,
+  },
+  textContainer: {
+    marginTop: -20, 
+    alignItems: "center",
+    flex: 1, 
+  },
+
   legendContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
@@ -218,6 +297,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     paddingVertical: 10,
     borderBottomWidth: 1,
+    marginBottom: 20,
     borderColor: "#e0e0e0",
   },
   legendItem: {
@@ -238,7 +318,6 @@ const styles = StyleSheet.create({
   scrollContainer: {
     marginTop: 10,
     paddingVertical: 20,
-    paddingHorizontal: 10,
   },
   card: {
     marginHorizontal: 8,
@@ -250,14 +329,11 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   cardSquare: {
-    width: 180,
+    width: 200,
+    gap: 30,
+    display: 'flex',
+
     height: 300,
-  },
-  subjectText: {
-    marginTop: 8,
-    color: "#FFFFFF",
-    fontSize: 14,
-    textAlign: "center",
   },
   scoreText: {
     fontSize: 14,
@@ -268,6 +344,31 @@ const styles = StyleSheet.create({
   errorText: {
     color: "red",
     fontSize: 16,
+    textAlign: "center",
+  },
+  dropdownContainer: {
+    marginVertical: 10,
+  },
+  selectedFileText: {
+    fontSize: 16,
+    marginTop: 20,
+    textAlign: "center",
+  },
+  chartContainer: {
+    marginTop: 20,
+    gap: 20,
+  },
+  centerContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    display: 'flex',
+    flexGrow: 1, 
+  },
+
+  subjectText: {
+    marginTop: 8,
+    color: "#FFFFFF",
+    fontSize: 14,
     textAlign: "center",
   },
 });
