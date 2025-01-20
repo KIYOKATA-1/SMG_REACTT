@@ -219,5 +219,13 @@ export interface IExamUploadResponse {
     bgColor?: string; 
   }
   
+  export interface ITestResult {
+    name: string;
+    score: number;
+    score_percent: number;
+    max_score: number;
+    expected_score: number;
+  }
+  
   
   

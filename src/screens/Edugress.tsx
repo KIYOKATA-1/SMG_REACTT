@@ -11,6 +11,7 @@ import {
 import Svg, { Circle, G } from "react-native-svg";
 import { EdugressService } from "../../services/edugress/edugress.service";
 import { useSession } from "../../lib/useSession";
+import { ITestResult } from "../../services/edugress/edugress.types";
 
 const RADIUS = 50;
 const STROKE_WIDTH = 10;
@@ -19,8 +20,9 @@ const CIRCLE_LENGTH = (radius: number) => 2 * Math.PI * radius;
 const EdugressScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [currentTestData, setCurrentTestData] = useState<any[]>([]);
-  const [lastTestData, setLastTestData] = useState<any[]>([]);
+  const [currentTestData, setCurrentTestData] = useState<ITestResult[]>([]);
+  const [lastTestData, setLastTestData] = useState<ITestResult[]>([]);
+
   const [animationValues, setAnimationValues] = useState<Animated.Value[]>([]);
   const { getSession } = useSession();
 
@@ -52,14 +54,20 @@ const EdugressScreen = () => {
 
         const currentTest =
           progressResponse.current_test_data?.results?.map((item: any) => ({
-            subject: item.name,
+            name: item.name,
             score: Math.round(item.score_percent),
+            score_percent: item.score_percent || 0,
+            max_score: item.max_score || 0,
+            expected_score: item.expected_score || 0,
           })) || [];
 
         const lastTest =
           progressResponse.last_test_data?.results?.map((item: any) => ({
-            subject: item.name,
+            name: item.name,
             score: Math.round(item.score_percent),
+            score_percent: item.score_percent || 0,
+            max_score: item.max_score || 0,
+            expected_score: item.expected_score || 0,
           })) || [];
 
         setCurrentTestData(currentTest);
@@ -109,18 +117,21 @@ const EdugressScreen = () => {
       <View style={styles.legendContainer}>
         <View style={styles.legendItem}>
           <View style={[styles.legendSquare, { backgroundColor: "#F2277E" }]} />
-          <Text style={{color: 'black', fontWeight: '600'}}>Текущий тест</Text>
+          <Text style={{ color: "black", fontWeight: "600" }}>
+            Текущий тест
+          </Text>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendSquare, { backgroundColor: "#9DE7BF" }]} />
-          <Text style={{color: 'black', fontWeight: '600'}}>Прошлый тест</Text>
+          <Text style={{ color: "black", fontWeight: "600" }}>
+            Прошлый тест
+          </Text>
         </View>
       </View>
       <ScrollView horizontal style={styles.scrollContainer}>
         {currentTestData.map((item, index) => {
           const previousScore =
-            lastTestData.find((test) => test.subject === item.subject)?.score ||
-            0;
+            lastTestData.find((test) => test.name === item.name)?.score || 0; // Заменено subject на name
           const currentScore = item.score;
 
           const currentAnimatedOffset = animationValues[index]?.interpolate({
@@ -176,13 +187,15 @@ const EdugressScreen = () => {
                   />
                 </G>
               </Svg>
-              <View style={{display: 'flex', flexDirection: 'column', gap: 10,}}>
-                  <Text style={styles.subjectText}>{item.subject}</Text>
-                  <Text style={styles.scoreText}>Текущий: {currentScore}%</Text>
-                  <Text style={styles.scoreText}>
-                    Прошлый: {previousScore}%
-                  </Text>
-                </View>
+              <View
+                style={{ display: "flex", flexDirection: "column", gap: 10 }}
+              >
+                <Text style={styles.subjectText}>
+                  {item.name || "Неизвестный предмет"}
+                </Text>
+                <Text style={styles.scoreText}>Текущий: {currentScore}%</Text>
+                <Text style={styles.scoreText}>Прошлый: {previousScore}%</Text>
+              </View>
             </View>
           );
         })}
@@ -212,9 +225,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  svg:{
+  svg: {
     display: "flex",
-    flexDirection: 'column',
+    flexDirection: "column",
     gap: 30,
   },
   legendSquare: {
@@ -230,7 +243,7 @@ const styles = StyleSheet.create({
   card: {
     marginHorizontal: 8,
     height: "auto",
-    display: 'flex',
+    display: "flex",
     padding: 16,
     backgroundColor: "#263546",
     borderRadius: 8,
