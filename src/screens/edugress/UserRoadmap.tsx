@@ -6,9 +6,16 @@ import {
   ScrollView,
   StyleSheet,
   SafeAreaView,
+  Modal,
+  TouchableOpacity,
+  Button,
 } from "react-native";
-import { useSession } from "../../../lib/useSession";
+import { WebView } from "react-native-webview";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 import { EdugressService } from "../../../services/edugress/edugress.service";
+import { useSession } from "../../../lib/useSession";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { UserRoadmapData } from "../../../services/edugress/edugress.types";
 
 const MONTH_NAMES = [
@@ -31,6 +38,12 @@ const RoadmapScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const { getSession } = useSession();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [diagnosticFile, setDiagnosticFile] = useState<string | null>(null);
+  const [isPDFVisible, setIsPDFVisible] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   useEffect(() => {
     const fetchRoadmapData = async () => {
@@ -51,6 +64,43 @@ const RoadmapScreen = () => {
 
     fetchRoadmapData();
   }, [getSession]);
+
+  const openModal = (month: string, fileUrl?: string) => {
+    setSelectedMonth(month);
+    setDiagnosticFile(fileUrl || null);
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setSelectedMonth(null);
+  };
+
+  const openPDF = () => {
+    setPdfLoading(true);
+    setModalVisible(false);
+    setIsPDFVisible(true);
+  };
+
+  const closePDF = () => {
+    setIsPDFVisible(false);
+  };
+
+  const downloadFile = async (fileUrl: string) => {
+    try {
+      setIsDownloading(true);
+      if (!FileSystem.documentDirectory) {
+        throw new Error("Директория для документов недоступна");
+      }
+      const fileUri = FileSystem.documentDirectory + fileUrl.split("/").pop();
+      const { uri } = await FileSystem.downloadAsync(fileUrl, fileUri);
+      await Sharing.shareAsync(uri);
+    } catch (error) {
+      console.error("Ошибка скачивания файла:", error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -80,13 +130,15 @@ const RoadmapScreen = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.roadmap}>
-          {/* Вертикальная линия */}
-          <View style={styles.verticalLine} />
           {roadmapData.roadmap.map((item, index) => (
-            <View key={index} style={styles.pointContainer}>
-              {/* Точка (поинт) */}
+            <TouchableOpacity
+              key={index}
+              style={styles.blockContainer}
+              onPress={() =>
+                openModal(MONTH_NAMES[item.month - 1], item.diagnostic_map)
+              }
+            >
               <View style={styles.point} />
-              {/* Информация о месяце */}
               <View style={styles.textContainer}>
                 <Text style={styles.monthText}>
                   {MONTH_NAMES[item.month - 1]}
@@ -99,13 +151,88 @@ const RoadmapScreen = () => {
                 </Text>
                 <Text style={styles.goalText}>
                   Цель:{" "}
-                  {item.goal ? `${parseFloat(item.goal).toFixed(0)}%` : "Нет данных"}
+                  {item.goal
+                    ? `${parseFloat(item.goal).toFixed(0)}%`
+                    : "Нет данных"}
                 </Text>
               </View>
-            </View>
+              {index < roadmapData.roadmap.length - 1 && (
+                <View style={styles.line} />
+              )}
+            </TouchableOpacity>
           ))}
         </View>
       </ScrollView>
+
+      <Modal
+        transparent
+        visible={modalVisible}
+        animationType="slide"
+        onRequestClose={closeModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>{selectedMonth || "Месяц"}</Text>
+            {diagnosticFile ? (
+              <View style={styles.modalButtons}>
+                {isDownloading ? (
+                  <ActivityIndicator size="large" color="#0000ff" />
+                ) : (
+                  <>
+                    <TouchableOpacity onPress={openPDF} style={styles.Btn}>
+                      <Text>Диагностика карты</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.Btn,
+                        { display: "flex", flexDirection: "row", gap: 5 },
+                      ]}
+                      onPress={() => downloadFile(diagnosticFile)}
+                    >
+                      <Text>Скачать</Text>
+                      <MaterialIcons name="download" size={20} color="black" />
+                    </TouchableOpacity>
+                  </>
+                )}
+              </View>
+            ) : (
+              <Text style={styles.noFileText}>Файл отсутствует</Text>
+            )}
+            <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
+              <Text style={styles.closeButtonText}>Закрыть</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {isPDFVisible && diagnosticFile && (
+        <Modal
+          visible={isPDFVisible}
+          animationType="slide"
+          onRequestClose={closePDF}
+        >
+          <SafeAreaView style={{ flex: 1 }}>
+            {pdfLoading && (
+              <ActivityIndicator
+                size="large"
+                color="#0000ff"
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              />
+            )}
+            <WebView
+              source={{ uri: diagnosticFile }}
+              onLoadEnd={() => setPdfLoading(false)}
+            />
+            <TouchableOpacity style={styles.closeButton} onPress={closePDF}>
+              <Text style={styles.closeButtonText}>Закрыть</Text>
+            </TouchableOpacity>
+          </SafeAreaView>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 };
@@ -113,77 +240,114 @@ const RoadmapScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#f9f9f9",
   },
   scrollContainer: {
-    paddingVertical: 16,
+    padding: 16,
     alignItems: "center",
+  },
+  header: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 20,
   },
   roadmap: {
-    width: "90%",
     alignItems: "center",
-    position: "relative",
-  },
-  verticalLine: {
-    position: "absolute",
-    width: 4,
-    backgroundColor: "#ddd",
-    top: 0,
-    bottom: 0,
-    left: "50%",
-    transform: [{ translateX: -2 }],
-  },
-  pointContainer: {
     width: "100%",
+  },
+  blockContainer: {
     alignItems: "center",
     marginBottom: 20,
-    position: "relative",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    elevation: 2,
   },
   point: {
     width: 20,
     height: 20,
     borderRadius: 10,
     backgroundColor: "#F2277E",
-    position: "absolute",
-    left: "50%",
-    transform: [{ translateX: -10 }],
     zIndex: 1,
   },
+  line: {
+    width: 2,
+    height: 40,
+    backgroundColor: "#ccc",
+    zIndex: 0,
+  },
   textContainer: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    alignItems: "center",
     marginTop: 10,
-    width: "70%",
+    paddingHorizontal: 10,
   },
   monthText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
-    color: "#444",
-    textAlign: "center",
   },
   resultText: {
-    fontSize: 16,
-    color: "#666",
-    marginTop: 8,
-    textAlign: "center",
+    fontSize: 14,
+    color: "#333",
   },
   goalText: {
+    fontSize: 14,
+    color: "#555",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    width: "80%",
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+  modalButtons: {
+    width: "100%",
+    marginBottom: 20,
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 20,
+  },
+  modalBtn: {},
+  noFileText: {
+    fontSize: 14,
+    color: "red",
+  },
+  closeButton: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: "#F2277E",
+    borderRadius: 5,
+    alignSelf: "center",
+  },
+  closeButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 16,
-    color: "#888",
-    marginTop: 4,
-    textAlign: "center",
   },
   errorText: {
     color: "red",
-    fontSize: 16,
-    textAlign: "center",
-    marginVertical: 20,
+  },
+  Btn: {
+    borderWidth: 1,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 10,
+    width: 200,
   },
 });
 
