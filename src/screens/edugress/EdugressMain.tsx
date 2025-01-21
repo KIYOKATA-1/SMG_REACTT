@@ -9,12 +9,11 @@ import {
   Animated,
 } from "react-native";
 import Svg, { Circle, G } from "react-native-svg";
-import { EdugressService } from "../../services/edugress/edugress.service";
-import { useSession } from "../../lib/useSession";
-import { ITestResult } from "../../services/edugress/edugress.types";
-import TestDetails from "../../components/TestDetails";
-import FilesDropdown from "../../components/FilesDropdown";
-import BarChart from "../../components/BarChart";
+import { EdugressService } from "../../../services/edugress/edugress.service";
+import { useSession } from "../../../lib/useSession";
+import { ITestResult } from "../../../services/edugress/edugress.types";
+import FilesDropdown from "../../../components/FilesDropdown";
+import BarChart from "../../../components/BarChart";
 
 const RADIUS = 50;
 const STROKE_WIDTH = 10;
@@ -285,9 +284,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   textContainer: {
-    marginTop: -20, 
+    marginTop: -20,
     alignItems: "center",
-    flex: 1, 
+    flex: 1,
   },
 
   legendContainer: {
@@ -331,7 +330,7 @@ const styles = StyleSheet.create({
   cardSquare: {
     width: 200,
     gap: 30,
-    display: 'flex',
+    display: "flex",
 
     height: 300,
   },
@@ -361,8 +360,8 @@ const styles = StyleSheet.create({
   centerContainer: {
     justifyContent: "center",
     alignItems: "center",
-    display: 'flex',
-    flexGrow: 1, 
+    display: "flex",
+    flexGrow: 1,
   },
 
   subjectText: {

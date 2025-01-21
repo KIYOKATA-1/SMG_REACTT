@@ -1,4 +1,4 @@
-import { IExamResults } from "./edugress.types";
+import { IExamResults, IExamStudentResultResponse, UserRoadmapData } from "./edugress.types";
 
 const BACKEND_URL = 'https://api.smg.kz/en/api';
 
@@ -46,5 +46,37 @@ export class EdugressService {
     }
 
     return await response.json();
+  }
+  static async getStudentResults(testId: number, token: string): Promise<IExamStudentResultResponse> {
+    const response = await fetch(`${BACKEND_URL}/edugress/exams/${testId}/results/student/`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Ошибка при получении результатов студентов');
+    }
+
+    
+    return await response.json();
+  }
+
+  static async getUserRoadmap(token: string): Promise<UserRoadmapData[]> {
+    const response = await fetch(`${BACKEND_URL}/edugress/roadmap/?limit=1000&offset=0`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+  
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Ошибка при получении данных роадмапа');
+    }
+  
+    return await response.json() as UserRoadmapData[];
   }
 }
