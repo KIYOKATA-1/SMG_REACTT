@@ -7,19 +7,27 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "Smg"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [],
+      "package": "com.kiyokata.SMG_REACTT"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "react-native-video"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "154a72e6-a9aa-4caf-9213-6d612005a387"
+      }
+    }
   }
 }

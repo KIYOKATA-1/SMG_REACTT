@@ -68,3 +68,10 @@ export interface IDiscount {
   months: number;
   percent:number;
 }
+
+export interface IOrdersResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: IOrder[];
+}
