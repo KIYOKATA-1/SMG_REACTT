@@ -172,7 +172,7 @@ const RoadmapScreen = () => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{selectedMonth || "Месяц"}</Text>
+            <Text style={styles.modalTitle}>{selectedMonth || ""}</Text>
             {diagnosticFile ? (
               <View style={styles.modalButtons}>
                 {isDownloading ? (
