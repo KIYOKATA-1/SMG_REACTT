@@ -1,11 +1,18 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   DrawerContentScrollView,
   DrawerItemList,
 } from "@react-navigation/drawer";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { View, Image, StyleSheet, Text, TouchableOpacity } from "react-native";
+import {
+  View,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  Animated,
+} from "react-native";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import {
   faUserGraduate,
@@ -30,15 +37,31 @@ type RootStackParamList = {
 
 export default function CustomDrawerContent(props: any) {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const [isEdugressOpen, setEdugressOpen] = useState(false); // Track dropdown open state
-  const [activeMenu, setActiveMenu] = useState<string | null>(null); // Track active main menu or sub-option
+  const [isEdugressOpen, setEdugressOpen] = useState(false);
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const dropdownHeight = useRef(new Animated.Value(0)).current;
 
   const toggleEdugress = () => {
-    setEdugressOpen((prev) => !prev);
+    setEdugressOpen((prev) => {
+      if (prev) {
+        Animated.timing(dropdownHeight, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: false,
+        }).start();
+      } else {
+        Animated.timing(dropdownHeight, {
+          toValue: 150, // Задайте высоту в пикселях
+          duration: 400,
+          useNativeDriver: false,
+        }).start();
+      }
+      return !prev;
+    });
   };
 
   const handleMenuPress = (menu: string, screen: keyof RootStackParamList) => {
-    setActiveMenu(menu); // Set the active menu item
+    setActiveMenu(menu);
     navigation.navigate(screen);
   };
 
@@ -149,79 +172,84 @@ export default function CustomDrawerContent(props: any) {
           }
         />
       </TouchableOpacity>
-      {isEdugressOpen && (
-        <View style={styles.edugressDropdown}>
-          <TouchableOpacity
-            style={[
-              styles.edugressItem,
-              activeMenu === "Главная" && styles.activeSubOption,
-            ]}
-            onPress={() => handleOptionPress("Главная")}
-          >
-            <View style={styles.subOption}>
-              <MaterialCommunityIcons
-                name="rhombus-split"
-                size={20}
-                color={activeMenu === "Главная" ? "#fff" : "#333"}
-              />
-              <Text
-                style={[
-                  styles.edugressItemText,
-                  activeMenu === "Главная" && styles.activeSubOptionText,
-                ]}
-              >
-                Главная
-              </Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.edugressItem,
-              activeMenu === "Результаты" && styles.activeSubOption,
-            ]}
-            onPress={() => handleOptionPress("Результаты")}
-          >
-            <View style={styles.subOption}>
-              <MaterialCommunityIcons
-                name="text-box-search-outline"
-                size={20}
-                color={activeMenu === "Результаты" ? "#fff" : "#333"}
-              />
-              <Text
-                style={[
-                  styles.edugressItemText,
-                  activeMenu === "Результаты" && styles.activeSubOptionText,
-                ]}
-              >
-                Результаты
-              </Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.edugressItem,
-              activeMenu === "Дорожная карта" && styles.activeSubOption,
-            ]}
-            onPress={() => handleOptionPress("Дорожная карта")}
-          >
-            <View style={styles.subOption}>
-              <MaterialCommunityIcons
-                name="map-marker-path"
-                size={20}
-                color={activeMenu === "Дорожная карта" ? "#fff" : "#333"}
-              />
-              <Text
-                style={[
-                  styles.edugressItemText,
-                  activeMenu === "Дорожная карта" && styles.activeSubOptionText,
-                ]}
-              >
-                Дорожная карта
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-      )}
+      <Animated.View
+        style={[styles.edugressDropdown, { height: dropdownHeight }]}
+      >
+        {isEdugressOpen && (
+          <>
+            <TouchableOpacity
+              style={[
+                styles.edugressItem,
+                activeMenu === "Главная" && styles.activeSubOption,
+              ]}
+              onPress={() => handleOptionPress("Главная")}
+            >
+              <View style={styles.subOption}>
+                <MaterialCommunityIcons
+                  name="rhombus-split"
+                  size={20}
+                  color={activeMenu === "Главная" ? "#fff" : "#333"}
+                />
+                <Text
+                  style={[
+                    styles.edugressItemText,
+                    activeMenu === "Главная" && styles.activeSubOptionText,
+                  ]}
+                >
+                  Главная
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.edugressItem,
+                activeMenu === "Результаты" && styles.activeSubOption,
+              ]}
+              onPress={() => handleOptionPress("Результаты")}
+            >
+              <View style={styles.subOption}>
+                <MaterialCommunityIcons
+                  name="text-box-search-outline"
+                  size={20}
+                  color={activeMenu === "Результаты" ? "#fff" : "#333"}
+                />
+                <Text
+                  style={[
+                    styles.edugressItemText,
+                    activeMenu === "Результаты" && styles.activeSubOptionText,
+                  ]}
+                >
+                  Результаты
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.edugressItem,
+                activeMenu === "Дорожная карта" && styles.activeSubOption,
+              ]}
+              onPress={() => handleOptionPress("Дорожная карта")}
+            >
+              <View style={styles.subOption}>
+                <MaterialCommunityIcons
+                  name="map-marker-path"
+                  size={20}
+                  color={activeMenu === "Дорожная карта" ? "#fff" : "#333"}
+                />
+                <Text
+                  style={[
+                    styles.edugressItemText,
+                    activeMenu === "Дорожная карта" &&
+                      styles.activeSubOptionText,
+                  ]}
+                >
+                  Дорожная карта
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </>
+        )}
+      </Animated.View>
       <TouchableOpacity
         style={[
           styles.drawerItem,
@@ -257,83 +285,82 @@ export default function CustomDrawerContent(props: any) {
 }
 
 const styles = StyleSheet.create({
-    imageContainer: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      marginBottom: 20,
-    },
-    logo: {
-      alignSelf: "center",
-      resizeMode: "contain",
-      width: "70%",
-    },
-    drawerItem: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingVertical: 15,
-      paddingHorizontal: 20,
-      borderRadius: 10,
-      marginVertical: 5,
-      backgroundColor: "#f9f9f9",
-    },
-    activeDrawerItem: {
-      backgroundColor: "#260094",
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 3,
-      elevation: 5,
-    },
-    drawerLabelContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-    },
-    drawerLabel: {
-      fontSize: 16,
-      marginLeft: 10,
-      fontWeight: "500",
-    },
-    edugressDropdown: {
-      marginLeft: 15,
-      marginTop: 5,
-    },
-    edugressItem: {
-      paddingVertical: 10,
-      paddingHorizontal: 15,
-      borderRadius: 8,
-      marginVertical: 5,
-    },
-    subOption: {
-      flexDirection: "row",
-      alignItems: "center",
-    },
-    edugressItemText: {
-      fontSize: 14,
-      color: "#333",
-      marginLeft: 10,
-    },
-    activeSubOption: {
-      backgroundColor: "#260094",
-    },
-    activeSubOptionText: {
-      color: "#fff",
-    },
-    logoutButton: {
-      backgroundColor: "#E63946",
-      borderRadius: 25,
-      width: "80%",
-      height: 50,
-      justifyContent: "center",
-      alignItems: "center",
-      alignSelf: "center",
-      marginTop: 30,
-    },
-    logoutLabel: {
-      color: "#fff",
-      fontSize: 16,
-      fontWeight: "bold",
-    },
-  });
-  
+  imageContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  logo: {
+    alignSelf: "center",
+    resizeMode: "contain",
+    width: "70%",
+  },
+  drawerItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginVertical: 5,
+    backgroundColor: "#f9f9f9",
+  },
+  activeDrawerItem: {
+    backgroundColor: "#260094",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  drawerLabelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  drawerLabel: {
+    fontSize: 16,
+    marginLeft: 10,
+    fontWeight: "500",
+  },
+  edugressDropdown: {
+    marginLeft: 15,
+    marginTop: 5,
+  },
+  edugressItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    marginVertical: 5,
+  },
+  subOption: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  edugressItemText: {
+    fontSize: 14,
+    color: "#333",
+    marginLeft: 10,
+  },
+  activeSubOption: {
+    backgroundColor: "#260094",
+  },
+  activeSubOptionText: {
+    color: "#fff",
+  },
+  logoutButton: {
+    backgroundColor: "#E63946",
+    borderRadius: 25,
+    width: "80%",
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
+    marginTop: 30,
+  },
+  logoutLabel: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+});
