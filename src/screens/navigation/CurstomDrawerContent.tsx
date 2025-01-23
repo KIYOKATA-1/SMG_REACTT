@@ -51,7 +51,7 @@ export default function CustomDrawerContent(props: any) {
         }).start();
       } else {
         Animated.timing(dropdownHeight, {
-          toValue: 150, // Задайте высоту в пикселях
+          toValue: 150, 
           duration: 400,
           useNativeDriver: false,
         }).start();
@@ -77,7 +77,7 @@ export default function CustomDrawerContent(props: any) {
   };
 
   return (
-    <DrawerContentScrollView {...props}>
+    <DrawerContentScrollView {...props} style={{padding: 10,}}>
       <View style={styles.imageContainer}>
         <Image source={IMAGES.LOGIN_LOGO} style={styles.logo} />
       </View>
