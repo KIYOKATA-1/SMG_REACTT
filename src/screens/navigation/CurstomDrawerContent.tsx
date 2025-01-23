@@ -13,6 +13,7 @@ import {
   faChevronUp,
   faUser,
   faClockRotateLeft,
+  faStore,
 } from "@fortawesome/free-solid-svg-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import IMAGES from "../../../assets/img/image";
@@ -24,6 +25,7 @@ type RootStackParamList = {
   Profile: undefined;
   EduResults: undefined;
   RoadmapScreen: undefined;
+  Store: undefined;
 };
 
 export default function CustomDrawerContent(props: any) {
@@ -221,6 +223,30 @@ export default function CustomDrawerContent(props: any) {
         </View>
       )}
       <TouchableOpacity
+        style={[
+          styles.drawerItem,
+          activeMenu === "Store" && styles.activeDrawerItem,
+        ]}
+        onPress={() => handleMenuPress("Store", "Store")}
+      >
+        <View style={styles.drawerLabelContainer}>
+          <FontAwesomeIcon
+            icon={faStore}
+            size={20}
+            color={activeMenu === "Store" ? "#fff" : "#555"}
+          />
+          <Text
+            style={[
+              styles.drawerLabel,
+              { color: activeMenu === "Store" ? "#fff" : "#555" },
+            ]}
+          >
+            Магазин
+          </Text>
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity
         style={styles.logoutButton}
         onPress={() => navigation.replace("Login")}
       >
@@ -231,82 +257,83 @@ export default function CustomDrawerContent(props: any) {
 }
 
 const styles = StyleSheet.create({
-  imageContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  logo: {
-    alignSelf: "center",
-    resizeMode: "contain",
-    width: "70%",
-    marginBottom: 20,
-    right: 20,
-    position: "relative",
-  },
-  drawerItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
-    borderRadius: 5,
-  },
-  activeDrawerItem: {
-    backgroundColor: "#263546",
-  },
-  drawerLabelContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  drawerLabel: {
-    fontSize: 16,
-    paddingVertical: 10,
-    marginLeft: 10,
-  },
-  edugressDropdown: {
-    marginLeft: 10,
-    marginTop: 5,
-  },
-  edugressItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    borderBottomWidth: 1,
-    marginVertical: 5,
-    borderRadius: 5,
-  },
-  subOption: {
-    flexDirection: "row",
-    paddingVertical: 5,
-    alignItems: "center",
-  },
-  edugressItemText: {
-    fontSize: 14,
-    color: "#333",
-    marginLeft: 10,
-  },
-  activeSubOption: {
-    backgroundColor: "#263546",
-    borderRadius: 5,
-  },
-  activeSubOptionText: {
-    color: "#fff",
-  },
-  logoutButton: {
-    backgroundColor: "#F2277E",
-    borderRadius: 8,
-    width: 200,
-    height: 50,
-    justifyContent: "center",
-    alignItems: "center",
-    alignSelf: "center",
-    marginTop: 20,
-  },
-  logoutLabel: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-});
+    imageContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: 20,
+    },
+    logo: {
+      alignSelf: "center",
+      resizeMode: "contain",
+      width: "70%",
+    },
+    drawerItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingVertical: 15,
+      paddingHorizontal: 20,
+      borderRadius: 10,
+      marginVertical: 5,
+      backgroundColor: "#f9f9f9",
+    },
+    activeDrawerItem: {
+      backgroundColor: "#260094",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 3,
+      elevation: 5,
+    },
+    drawerLabelContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    drawerLabel: {
+      fontSize: 16,
+      marginLeft: 10,
+      fontWeight: "500",
+    },
+    edugressDropdown: {
+      marginLeft: 15,
+      marginTop: 5,
+    },
+    edugressItem: {
+      paddingVertical: 10,
+      paddingHorizontal: 15,
+      borderRadius: 8,
+      marginVertical: 5,
+    },
+    subOption: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    edugressItemText: {
+      fontSize: 14,
+      color: "#333",
+      marginLeft: 10,
+    },
+    activeSubOption: {
+      backgroundColor: "#260094",
+    },
+    activeSubOptionText: {
+      color: "#fff",
+    },
+    logoutButton: {
+      backgroundColor: "#E63946",
+      borderRadius: 25,
+      width: "80%",
+      height: 50,
+      justifyContent: "center",
+      alignItems: "center",
+      alignSelf: "center",
+      marginTop: 30,
+    },
+    logoutLabel: {
+      color: "#fff",
+      fontSize: 16,
+      fontWeight: "bold",
+    },
+  });
+  

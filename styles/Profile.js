@@ -22,7 +22,7 @@ export const ProfileStyle = StyleSheet.create({
   userInfo: {
     width: '90%',
     borderRadius: 18,
-    backgroundColor: '#202942',
+    backgroundColor: '#260094',
     padding: 15,
     alignItems: 'center',
     flexDirection: 'row',
@@ -76,7 +76,7 @@ export const ProfileStyle = StyleSheet.create({
     padding: 10,
     width: '100%',
     marginVertical: 20,
-    backgroundColor: '#202942',
+    backgroundColor: '#260094',
     borderRadius: 9,
     borderWidth: 1,
     borderColor: '#000'
