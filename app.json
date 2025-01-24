@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "SMG Academy",
-    "slug": "SMG Academy",
+    "name": "SMG_REACTT",
+    "slug": "SMG_REACTT",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
