@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
+  ScrollView, // Добавлен ScrollView
   View,
   Text,
   StyleSheet,
@@ -21,10 +22,10 @@ import { ISession } from "../../../services/auth/auth.types";
 import { useSession } from "../../../lib/useSession";
 import { StoreService } from "../../../services/store/store.service";
 import { CartProduct, StoreProduct } from "../../../services/store/store.types";
-import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { DrawerNavigationProp } from "@react-navigation/drawer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const StorePage = () => {
   type RootDrawerParamList = {
     Cart: undefined;
@@ -100,7 +101,6 @@ const StorePage = () => {
     (text: string) => {
       setSearchTerm(text);
       if (text.trim() === "") {
-        // Если строка поиска пуста, показываем все продукты
         setFilteredProducts(products);
         return;
       }
@@ -128,7 +128,6 @@ const StorePage = () => {
 
       await AsyncStorage.setItem("cart", JSON.stringify(cart));
 
-      // Обновляем счетчик товаров в корзине
       setCartItemCount(cart.reduce((sum, item) => sum + item.quantity, 0));
 
       Alert.alert("Успех", "Товар добавлен в корзину!");
@@ -138,180 +137,134 @@ const StorePage = () => {
     }
   };
 
-  const handleNextImage = (productId: number) => {
-    setCurrentImageIndex((prev) => ({
-      ...prev,
-      [productId]:
-        (prev[productId] + 1) %
-        (products.find((p) => p.id === productId)?.file_image?.length || 1),
-    }));
-  };
-
-  const handlePrevImage = (productId: number) => {
-    setCurrentImageIndex((prev) => ({
-      ...prev,
-      [productId]:
-        (prev[productId] -
-          1 +
-          (products.find((p) => p.id === productId)?.file_image?.length || 1)) %
-        (products.find((p) => p.id === productId)?.file_image?.length || 1),
-    }));
-  };
-
-  useEffect(() => {
-    const initialIndexes = products.reduce((acc, product) => {
-      acc[product.id] = 0;
-      return acc;
-    }, {} as { [key: number]: number });
-    setCurrentImageIndex(initialIndexes);
-  }, [products]);
-
-  const openImageModal = (images: string[], index: number) => {
-    setModalImages(images);
-    setModalCurrentIndex(index);
-    setModalVisible(true);
-  };
-
-  const sortedProductsWithHitsFirst = useMemo(() => {
-    const hits = products.filter((product) => product.is_hit);
-    const others = products.filter((product) => !product.is_hit);
-    return [...hits, ...others];
-  }, [products]);
-
-  const renderProduct = ({ item }: { item: StoreProduct }) => (
-    <View style={styles.productCard}>
-      {item.is_hit && (
-        <View style={styles.hitTag}>
-          <Text style={styles.hitTagText}>Хит Продаж!</Text>
+  const ProductCard = ({ item, currentImageIndex, addToCart }: { 
+    item: StoreProduct; 
+    currentImageIndex: { [key: number]: number }; 
+    addToCart: (product: StoreProduct) => void; 
+  }) => {
+    const [isImageLoading, setImageLoading] = useState(true);
+  
+    return (
+      <View style={styles.productCard}>
+        {item.is_hit && (
+          <View style={styles.hitTag}>
+            <Text style={styles.hitTagText}>Хит Продаж!</Text>
+          </View>
+        )}
+        <View style={styles.imageContainer}>
+          {isImageLoading && (
+            <ActivityIndicator
+              size="large"
+              color="#260094"
+              style={styles.imageLoader}
+            />
+          )}
+          <Image
+            source={{
+              uri:
+                item.file_image[currentImageIndex[item.id]] ||
+                "https://via.placeholder.com/150",
+            }}
+            style={[styles.productImage, isImageLoading && { display: "none" }]}
+            onLoad={() => setImageLoading(false)}
+            onError={() => setImageLoading(false)} // В случае ошибки тоже скрываем лоадер
+          />
         </View>
-      )}
-      <View style={styles.imageContainer}>
-        <Image
-          source={{
-            uri:
-              item.file_image[currentImageIndex[item.id]] ||
-              "https://via.placeholder.com/150",
-          }}
-          style={styles.productImage}
-        />
+        <Text style={styles.productName}>{item.name}</Text>
+        <Text style={styles.productDescription}>{item.description}</Text>
+        <Text style={styles.productPrice}>{item.price} EdCoins</Text>
+        <TouchableOpacity
+          style={styles.addToCartButton}
+          onPress={() => addToCart(item)}
+        >
+          <Text style={styles.addToCartText}>Добавить в корзину</Text>
+        </TouchableOpacity>
       </View>
-      <Text style={styles.productName}>{item.name}</Text>
-      <Text style={styles.productDescription}>{item.description}</Text>
-      <Text style={styles.productPrice}>{item.price} EdCoins</Text>
-      <TouchableOpacity
-        style={styles.addToCartButton}
-        onPress={() => addToCart(item)}
-      >
-        <Text style={styles.addToCartText}>Добавить в корзину</Text>
-      </TouchableOpacity>
-    </View>
-  );
+    );
+  };
+  
 
   return (
     <SafeAreaView style={styles.safeContainer}>
-      <View style={styles.topBtns}>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate("Cart")}
-        >
-          <MaterialIcons name="shopping-cart" size={24} color="white" />
-          {cartItemCount > 0 && (
-            <View style={styles.cartBadge}>
-              <Text style={styles.cartBadgeText}>{cartItemCount}</Text>
-            </View>
-          )}
-          <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
-            Корзина
-          </Text>
-        </TouchableOpacity>
+      <ScrollView>
+        <View style={styles.topBtns}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate("Cart")}
+          >
+            <MaterialIcons name="shopping-cart" size={24} color="white" />
+            {cartItemCount > 0 && (
+              <View style={styles.cartBadge}>
+                <Text style={styles.cartBadgeText}>{cartItemCount}</Text>
+              </View>
+            )}
+            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+              Корзина
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate("History")}
-        >
-          <MaterialCommunityIcons name="history" size={26} color="white" />
-          <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
-            История
-          </Text>
-        </TouchableOpacity>
-        <View style={styles.balance}>
-          <Text style={{ color: "#FFFFFFA6", fontSize: 14, fontWeight: "500" }}>
-            Ваш Баланс
-          </Text>
-          <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
-            {session?.user.coins ?? "Загрузка..."} EdCoins
-          </Text>
-        </View>
-      </View>
-      <View style={styles.contentWrapper}>
-        <ImageBackground
-          source={IMAGES.STORE}
-          style={styles.background}
-          imageStyle={styles.imageStyle}
-        >
-          <View style={styles.contentContainer}>
-            <Text style={styles.title}>Добро пожаловать в Mirum Store!</Text>
-            <Text style={styles.subtitle}>
-              Вы долго и упорно (и, конечно же, заслуженно) зарабатывали свои
-              эдкоины и теперь{"\n"}
-              настало время заслуженных покупок!
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate("History")}
+          >
+            <MaterialCommunityIcons name="history" size={26} color="white" />
+            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+              История
+            </Text>
+          </TouchableOpacity>
+          <View style={styles.balance}>
+            <Text style={{ color: "#FFFFFFA6", fontSize: 14, fontWeight: "500" }}>
+              Ваш Баланс
+            </Text>
+            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+              {session?.user.coins ?? "Загрузка..."} EdCoins
             </Text>
           </View>
-        </ImageBackground>
-        <View style={styles.searchBar}>
-          <TextInput
-            placeholder="Поиск товара"
-            style={styles.searchInput}
-            value={searchTerm}
-            onChangeText={handleSearch}
-          />
-          <FontAwesome name="search" size={24} color="white" />
         </View>
-        {isLoading ? (
-          <ActivityIndicator size="large" color="#0000ff" />
-        ) : (
-          <FlatList
-            data={filteredProducts}
-            renderItem={renderProduct}
-            keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={styles.productList}
-            horizontal={true}
-          />
-        )}
-      </View>
-
-      <Modal visible={modalVisible} transparent>
-        <View style={styles.modalContainer}>
-          <Image
-            source={{ uri: modalImages[modalCurrentIndex] }}
-            style={styles.modalImage}
-          />
-          <View style={styles.modalNavigation}>
-            <TouchableOpacity
-              onPress={() =>
-                setModalCurrentIndex(
-                  (prev) => (prev - 1 + modalImages.length) % modalImages.length
-                )
-              }
-            >
-              <Text style={styles.navButtonText}>◀</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() =>
-                setModalCurrentIndex((prev) => (prev + 1) % modalImages.length)
-              }
-            >
-              <Text style={styles.navButtonText}>▶</Text>
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity
-            style={styles.modalCloseButton}
-            onPress={() => setModalVisible(false)}
+        <View style={styles.contentWrapper}>
+          <ImageBackground
+            source={IMAGES.STORE}
+            style={styles.background}
+            imageStyle={styles.imageStyle}
           >
-            <Text style={styles.modalCloseText}>Закрыть</Text>
-          </TouchableOpacity>
+            <View style={styles.contentContainer}>
+              <Text style={styles.title}>Добро пожаловать в Mirum Store!</Text>
+              <Text style={styles.subtitle}>
+                Вы долго и упорно (и, конечно же, заслуженно) зарабатывали свои
+                эдкоины и теперь{"\n"}
+                настало время заслуженных покупок!
+              </Text>
+            </View>
+          </ImageBackground>
+          <View style={styles.searchBar}>
+            <TextInput
+              placeholder="Поиск товара"
+              style={styles.searchInput}
+              value={searchTerm}
+              onChangeText={handleSearch}
+            />
+            <FontAwesome name="search" size={24} color="white" />
+          </View>
+          {isLoading ? (
+            <ActivityIndicator size="large" color="#0000ff" />
+          ) : (
+<FlatList
+  data={filteredProducts}
+  renderItem={({ item }) => (
+    <ProductCard
+      item={item}
+      currentImageIndex={currentImageIndex}
+      addToCart={addToCart}
+    />
+  )}
+  keyExtractor={(item) => item.id.toString()}
+  contentContainerStyle={styles.productList}
+  horizontal={true}
+/>
+
+          )}
         </View>
-      </Modal>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -530,6 +483,13 @@ const styles = StyleSheet.create({
     height: 150, // Фиксированная высота изображения
     justifyContent: "center",
     alignItems: "center",
+  },
+  imageLoader: {
+    position: "absolute",
+    alignSelf: "center",
+    justifyContent: "center",
+    width: "100%",
+    height: "100%",
   },
   productImage: {
     width: "100%",
