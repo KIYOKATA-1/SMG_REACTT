@@ -62,22 +62,14 @@ const EdugressResults = () => {
     }
   };
 
-  const getRowStyle = (index: number, isUser: boolean): object => {
-    if (isUser) {
-      return {
-        backgroundColor: "#FFD700", // Золотой фон
-        borderColor: "#FFD700", // Золотая граница
-        shadowColor: "#FFD700", // Эффект свечения
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.9,
-        shadowRadius: 10,
-        elevation: 10, // Для Android
-      };
+  const getRowColor = (index: number): string => {
+    if (userRanking !== null && index === userRanking - 1) {
+      return "#FFD700"; // Подсветка текущего пользователя
     }
-    if (index < 25) {
-      return { backgroundColor: "#CBFAD8" }; // Цвет для топ-25
-    }
-    return {};
+    if (index < 5) return "#CBFAD8"; // Топ-5
+    if (index >= 5 && index < 15) return "#CBE0FA"; // 6-15 места
+    if (index >= 15 && index < 25) return "#E0CBFA"; // 16-25 места
+    return "#FFFFFF"; // Остальные
   };
 
   const renderResults = () => {
@@ -89,39 +81,50 @@ const EdugressResults = () => {
       );
     }
 
-    const userInTop25 = userRanking !== null && userRanking <= 25;
     const user = userRanking !== null ? topStudents[userRanking - 1] : null;
+    const isUserOutsideTop25 = userRanking !== null && userRanking > 25;
+
+    const displayData = isUserOutsideTop25
+      ? [...topStudents.slice(0, 25), user] // Топ-25 + пользователь
+      : topStudents.slice(0, 25); // Только топ-25
 
     return (
       <View style={styles.resultWrapper}>
         <FlatList
-          data={
-            userInTop25
-              ? topStudents.slice(0, 25)
-              : [...topStudents.slice(0, 25), user]
-          }
+          data={displayData}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item, index }) => {
-            if (!item) return null; // Пропускаем некорректные данные
+            if (!item) return null;
 
-            const isUser = userRanking !== null && index === userRanking - 1;
             return (
-              <View style={[styles.resultItem, getRowStyle(index, isUser)]}>
+              <View
+                style={[
+                  styles.resultItem,
+                  { backgroundColor: getRowColor(index) },
+                ]}
+              >
                 <Text style={styles.resultIndex}>{index + 1}.</Text>
                 <View>
                   <Text style={styles.resultName}>
                     {item.user_info.first_name} {item.user_info.last_name}
                   </Text>
-                  <Text style={styles.resultScore}>Баллы: {item.total_score}</Text>
+                  <Text style={styles.resultScore}>
+                    Баллы: {item.total_score}
+                  </Text>
                 </View>
               </View>
             );
           }}
         />
-        {!userInTop25 && userRanking !== null && user && (
+        {isUserOutsideTop25 && user && (
           <>
             <Text style={styles.ellipsis}>...</Text>
-            <View style={[styles.resultItem, getRowStyle(userRanking - 1, true)]}>
+            <View
+              style={[
+                styles.resultItem,
+                { backgroundColor: getRowColor(userRanking - 1) },
+              ]}
+            >
               <Text style={styles.resultIndex}>{userRanking}.</Text>
               <View>
                 <Text style={styles.resultName}>
@@ -181,7 +184,7 @@ const styles = StyleSheet.create({
   },
   resultsContainer: {
     flex: 1,
-    marginHorizontal: 16, 
+    marginHorizontal: 16,
   },
   resultWrapper: {
     marginTop: 16,
@@ -201,11 +204,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#ccc",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 2, // Для Android
   },
   resultIndex: {
     fontSize: 18,

@@ -1,11 +1,18 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   DrawerContentScrollView,
   DrawerItemList,
 } from "@react-navigation/drawer";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { View, Image, StyleSheet, Text, TouchableOpacity } from "react-native";
+import {
+  View,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  Animated,
+} from "react-native";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import {
   faUserGraduate,
@@ -13,6 +20,7 @@ import {
   faChevronUp,
   faUser,
   faClockRotateLeft,
+  faStore,
 } from "@fortawesome/free-solid-svg-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import IMAGES from "../../../assets/img/image";
@@ -24,19 +32,36 @@ type RootStackParamList = {
   Profile: undefined;
   EduResults: undefined;
   RoadmapScreen: undefined;
+  Store: undefined;
 };
 
 export default function CustomDrawerContent(props: any) {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const [isEdugressOpen, setEdugressOpen] = useState(false); // Track dropdown open state
-  const [activeMenu, setActiveMenu] = useState<string | null>(null); // Track active main menu or sub-option
+  const [isEdugressOpen, setEdugressOpen] = useState(false);
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const dropdownHeight = useRef(new Animated.Value(0)).current;
 
   const toggleEdugress = () => {
-    setEdugressOpen((prev) => !prev);
+    setEdugressOpen((prev) => {
+      if (prev) {
+        Animated.timing(dropdownHeight, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: false,
+        }).start();
+      } else {
+        Animated.timing(dropdownHeight, {
+          toValue: 150, 
+          duration: 400,
+          useNativeDriver: false,
+        }).start();
+      }
+      return !prev;
+    });
   };
 
   const handleMenuPress = (menu: string, screen: keyof RootStackParamList) => {
-    setActiveMenu(menu); // Set the active menu item
+    setActiveMenu(menu);
     navigation.navigate(screen);
   };
 
@@ -52,7 +77,7 @@ export default function CustomDrawerContent(props: any) {
   };
 
   return (
-    <DrawerContentScrollView {...props}>
+    <DrawerContentScrollView {...props} style={{padding: 10,}}>
       <View style={styles.imageContainer}>
         <Image source={IMAGES.LOGIN_LOGO} style={styles.logo} />
       </View>
@@ -147,79 +172,108 @@ export default function CustomDrawerContent(props: any) {
           }
         />
       </TouchableOpacity>
-      {isEdugressOpen && (
-        <View style={styles.edugressDropdown}>
-          <TouchableOpacity
+      <Animated.View
+        style={[styles.edugressDropdown, { height: dropdownHeight }]}
+      >
+        {isEdugressOpen && (
+          <>
+            <TouchableOpacity
+              style={[
+                styles.edugressItem,
+                activeMenu === "Главная" && styles.activeSubOption,
+              ]}
+              onPress={() => handleOptionPress("Главная")}
+            >
+              <View style={styles.subOption}>
+                <MaterialCommunityIcons
+                  name="rhombus-split"
+                  size={20}
+                  color={activeMenu === "Главная" ? "#fff" : "#333"}
+                />
+                <Text
+                  style={[
+                    styles.edugressItemText,
+                    activeMenu === "Главная" && styles.activeSubOptionText,
+                  ]}
+                >
+                  Главная
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.edugressItem,
+                activeMenu === "Результаты" && styles.activeSubOption,
+              ]}
+              onPress={() => handleOptionPress("Результаты")}
+            >
+              <View style={styles.subOption}>
+                <MaterialCommunityIcons
+                  name="text-box-search-outline"
+                  size={20}
+                  color={activeMenu === "Результаты" ? "#fff" : "#333"}
+                />
+                <Text
+                  style={[
+                    styles.edugressItemText,
+                    activeMenu === "Результаты" && styles.activeSubOptionText,
+                  ]}
+                >
+                  Результаты
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.edugressItem,
+                activeMenu === "Дорожная карта" && styles.activeSubOption,
+              ]}
+              onPress={() => handleOptionPress("Дорожная карта")}
+            >
+              <View style={styles.subOption}>
+                <MaterialCommunityIcons
+                  name="map-marker-path"
+                  size={20}
+                  color={activeMenu === "Дорожная карта" ? "#fff" : "#333"}
+                />
+                <Text
+                  style={[
+                    styles.edugressItemText,
+                    activeMenu === "Дорожная карта" &&
+                      styles.activeSubOptionText,
+                  ]}
+                >
+                  Дорожная карта
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </>
+        )}
+      </Animated.View>
+      <TouchableOpacity
+        style={[
+          styles.drawerItem,
+          activeMenu === "Store" && styles.activeDrawerItem,
+        ]}
+        onPress={() => handleMenuPress("Store", "Store")}
+      >
+        <View style={styles.drawerLabelContainer}>
+          <FontAwesomeIcon
+            icon={faStore}
+            size={20}
+            color={activeMenu === "Store" ? "#fff" : "#555"}
+          />
+          <Text
             style={[
-              styles.edugressItem,
-              activeMenu === "Главная" && styles.activeSubOption,
+              styles.drawerLabel,
+              { color: activeMenu === "Store" ? "#fff" : "#555" },
             ]}
-            onPress={() => handleOptionPress("Главная")}
           >
-            <View style={styles.subOption}>
-              <MaterialCommunityIcons
-                name="rhombus-split"
-                size={20}
-                color={activeMenu === "Главная" ? "#fff" : "#333"}
-              />
-              <Text
-                style={[
-                  styles.edugressItemText,
-                  activeMenu === "Главная" && styles.activeSubOptionText,
-                ]}
-              >
-                Главная
-              </Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.edugressItem,
-              activeMenu === "Результаты" && styles.activeSubOption,
-            ]}
-            onPress={() => handleOptionPress("Результаты")}
-          >
-            <View style={styles.subOption}>
-              <MaterialCommunityIcons
-                name="text-box-search-outline"
-                size={20}
-                color={activeMenu === "Результаты" ? "#fff" : "#333"}
-              />
-              <Text
-                style={[
-                  styles.edugressItemText,
-                  activeMenu === "Результаты" && styles.activeSubOptionText,
-                ]}
-              >
-                Результаты
-              </Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.edugressItem,
-              activeMenu === "Дорожная карта" && styles.activeSubOption,
-            ]}
-            onPress={() => handleOptionPress("Дорожная карта")}
-          >
-            <View style={styles.subOption}>
-              <MaterialCommunityIcons
-                name="map-marker-path"
-                size={20}
-                color={activeMenu === "Дорожная карта" ? "#fff" : "#333"}
-              />
-              <Text
-                style={[
-                  styles.edugressItemText,
-                  activeMenu === "Дорожная карта" && styles.activeSubOptionText,
-                ]}
-              >
-                Дорожная карта
-              </Text>
-            </View>
-          </TouchableOpacity>
+            Магазин
+          </Text>
         </View>
-      )}
+      </TouchableOpacity>
+
       <TouchableOpacity
         style={styles.logoutButton}
         onPress={() => navigation.replace("Login")}
@@ -235,27 +289,30 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    marginBottom: 20,
   },
   logo: {
     alignSelf: "center",
     resizeMode: "contain",
     width: "70%",
-    marginBottom: 20,
-    right: 20,
-    position: "relative",
   },
   drawerItem: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 10,
+    paddingVertical: 15,
     paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
-    borderRadius: 5,
+    borderRadius: 10,
+    marginVertical: 5,
+    backgroundColor: "#f9f9f9",
   },
   activeDrawerItem: {
-    backgroundColor: "#263546",
+    backgroundColor: "#260094",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 5,
   },
   drawerLabelContainer: {
     flexDirection: "row",
@@ -263,23 +320,21 @@ const styles = StyleSheet.create({
   },
   drawerLabel: {
     fontSize: 16,
-    paddingVertical: 10,
     marginLeft: 10,
+    fontWeight: "500",
   },
   edugressDropdown: {
-    marginLeft: 10,
+    marginLeft: 15,
     marginTop: 5,
   },
   edugressItem: {
     paddingVertical: 10,
-    paddingHorizontal: 10,
-    borderBottomWidth: 1,
+    paddingHorizontal: 15,
+    borderRadius: 8,
     marginVertical: 5,
-    borderRadius: 5,
   },
   subOption: {
     flexDirection: "row",
-    paddingVertical: 5,
     alignItems: "center",
   },
   edugressItemText: {
@@ -288,21 +343,20 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   activeSubOption: {
-    backgroundColor: "#263546",
-    borderRadius: 5,
+    backgroundColor: "#260094",
   },
   activeSubOptionText: {
     color: "#fff",
   },
   logoutButton: {
-    backgroundColor: "#F2277E",
-    borderRadius: 8,
-    width: 200,
+    backgroundColor: "#E63946",
+    borderRadius: 25,
+    width: "80%",
     height: 50,
     justifyContent: "center",
     alignItems: "center",
     alignSelf: "center",
-    marginTop: 20,
+    marginTop: 30,
   },
   logoutLabel: {
     color: "#fff",

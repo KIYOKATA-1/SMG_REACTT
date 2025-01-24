@@ -15,6 +15,7 @@ import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { EdugressService } from "../../../services/edugress/edugress.service";
 import { useSession } from "../../../lib/useSession";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { UserRoadmapData } from "../../../services/edugress/edugress.types";
 
 const MONTH_NAMES = [
@@ -42,6 +43,7 @@ const RoadmapScreen = () => {
   const [diagnosticFile, setDiagnosticFile] = useState<string | null>(null);
   const [isPDFVisible, setIsPDFVisible] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   useEffect(() => {
     const fetchRoadmapData = async () => {
@@ -75,6 +77,7 @@ const RoadmapScreen = () => {
   };
 
   const openPDF = () => {
+    setPdfLoading(true);
     setModalVisible(false);
     setIsPDFVisible(true);
   };
@@ -126,15 +129,14 @@ const RoadmapScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text style={styles.header}>
-          {roadmapData.user.first_name} {roadmapData.user.last_name}
-        </Text>
         <View style={styles.roadmap}>
           {roadmapData.roadmap.map((item, index) => (
             <TouchableOpacity
               key={index}
               style={styles.blockContainer}
-              onPress={() => openModal(MONTH_NAMES[item.month - 1], item.diagnostic_map)}
+              onPress={() =>
+                openModal(MONTH_NAMES[item.month - 1], item.diagnostic_map)
+              }
             >
               <View style={styles.point} />
               <View style={styles.textContainer}>
@@ -148,7 +150,10 @@ const RoadmapScreen = () => {
                     : "Нет данных"}
                 </Text>
                 <Text style={styles.goalText}>
-                  Цель: {item.goal ? `${parseFloat(item.goal).toFixed(0)}%` : "Нет данных"}
+                  Цель:{" "}
+                  {item.goal
+                    ? `${parseFloat(item.goal).toFixed(0)}%`
+                    : "Нет данных"}
                 </Text>
               </View>
               {index < roadmapData.roadmap.length - 1 && (
@@ -167,20 +172,26 @@ const RoadmapScreen = () => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {selectedMonth || "Месяц"}
-            </Text>
+            <Text style={styles.modalTitle}>{selectedMonth || ""}</Text>
             {diagnosticFile ? (
               <View style={styles.modalButtons}>
                 {isDownloading ? (
                   <ActivityIndicator size="large" color="#0000ff" />
                 ) : (
                   <>
-                    <Button title="Диагностическая карта" onPress={openPDF} />
-                    <Button
-                      title="Скачать"
+                    <TouchableOpacity onPress={openPDF} style={styles.Btn}>
+                      <Text>Диагностика карты</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.Btn,
+                        { display: "flex", flexDirection: "row", gap: 5 },
+                      ]}
                       onPress={() => downloadFile(diagnosticFile)}
-                    />
+                    >
+                      <Text>Скачать</Text>
+                      <MaterialIcons name="download" size={20} color="black" />
+                    </TouchableOpacity>
                   </>
                 )}
               </View>
@@ -195,9 +206,27 @@ const RoadmapScreen = () => {
       </Modal>
 
       {isPDFVisible && diagnosticFile && (
-        <Modal visible={isPDFVisible} animationType="slide" onRequestClose={closePDF}>
+        <Modal
+          visible={isPDFVisible}
+          animationType="slide"
+          onRequestClose={closePDF}
+        >
           <SafeAreaView style={{ flex: 1 }}>
-            <WebView source={{ uri: diagnosticFile }} />
+            {pdfLoading && (
+              <ActivityIndicator
+                size="large"
+                color="#0000ff"
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              />
+            )}
+            <WebView
+              source={{ uri: diagnosticFile }}
+              onLoadEnd={() => setPdfLoading(false)}
+            />
             <TouchableOpacity style={styles.closeButton} onPress={closePDF}>
               <Text style={styles.closeButtonText}>Закрыть</Text>
             </TouchableOpacity>
@@ -287,7 +316,12 @@ const styles = StyleSheet.create({
   modalButtons: {
     width: "100%",
     marginBottom: 20,
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 20,
   },
+  modalBtn: {},
   noFileText: {
     fontSize: 14,
     color: "red",
@@ -303,6 +337,17 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  errorText: {
+    color: "red",
+  },
+  Btn: {
+    borderWidth: 1,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 10,
+    width: 200,
   },
 });
 

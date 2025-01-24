@@ -21,8 +21,12 @@ import TestPage from "../../../components/TestPage";
 import EdugressScreen from "@/screens/edugress/EdugressMain";
 import CustomDrawerContent from "./CurstomDrawerContent";
 import EdugressResults from "../edugress/EdugressResult";
-import RoadmapScreen from "../edugress/UserRoadmap";
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import PurchaseHistory from "../store/history/HistoryPage";
 
+import RoadmapScreen from "../edugress/UserRoadmap";
+import StorePage from "../store/StorePage";
+import StoreCart from "../store/cart/CartPage";
 type RootDrawerParamList = {
   Profile: undefined;
   Transactions: undefined;
@@ -32,6 +36,9 @@ type RootDrawerParamList = {
   ProductDetails: undefined;
   TestPage: { testId: number };
   RoadmapScreen: undefined;
+  Store: undefined; 
+  Cart: undefined;
+  History: undefined;
 };
 
 type DrawerNavigatorProps = DrawerNavigationProp<RootDrawerParamList>;
@@ -47,7 +54,7 @@ const CustomBurgerButton = () => {
       onPress={() => navigation.toggleDrawer()}
       style={styles.burgerBtn}
     >
-      <FontAwesomeIcon icon={faBars} size={24} color="#202942" />
+      <FontAwesomeIcon icon={faBars} size={24} color="#260094" />
     </TouchableOpacity>
   );
 };
@@ -96,6 +103,32 @@ const DrawerNavigator = () => {
           focus: () => handleSetActive("Profile"),
         }}
       />
+<Drawer.Screen
+  name="Cart"
+  component={StoreCart}
+  options={{
+    drawerLabel: "Корзина",
+    headerShown: false,
+    drawerIcon: ({ size, color }) => (
+      <MaterialCommunityIcons name="cart" size={size} color={color} />
+    ),
+  }}
+/>
+
+<Drawer.Screen
+  name="History"
+  component={PurchaseHistory}
+  options={{
+    drawerLabel: "История",
+    headerShown: false,
+    drawerIcon: ({ size, color }) => (
+      <MaterialCommunityIcons name="cart" size={size} color={color} />
+    ),
+  }}
+/>
+
+
+
       <Drawer.Screen
         name="Transactions"
         component={TransactionsScreen}
@@ -157,6 +190,22 @@ const DrawerNavigator = () => {
           headerTintColor: "transparent",
         }}
       />
+      <Drawer.Screen
+  name="Store"
+  component={StorePage} // Замените на ваш компонент страницы Store
+  options={{
+    drawerLabel: "Магазин",
+    drawerIcon: ({ size, color }) => (
+      <MaterialCommunityIcons name="cart" size={24} color="black" />
+    ),
+    drawerItemStyle: styles.drawerItem,
+    headerTintColor: "transparent",
+  }}
+  listeners={{
+    focus: () => handleSetActive("Store"),
+  }}
+/>
+
 
       <Drawer.Screen
         name="ProductDetails"
