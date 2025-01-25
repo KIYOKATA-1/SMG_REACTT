@@ -27,7 +27,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>Smg</string>
+          <string>com.kanagatkassymov.smgreactt</string>
         </array>
       </dict>
     </array>

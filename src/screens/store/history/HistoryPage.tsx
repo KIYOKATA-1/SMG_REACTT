@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  SafeAreaView,
 } from "react-native";
 import { useSession } from "../../../../lib/useSession";
 import { StoreService } from "../../../../services/store/store.service";
@@ -35,18 +36,26 @@ const PurchaseItem = ({
     <View style={styles.purchaseCard}>
       <View style={styles.imageContainer}>
         {!imageLoaded && (
-          <ActivityIndicator size="large" color="#260094" style={styles.imageLoader} />
+          <ActivityIndicator
+            size="large"
+            color="#260094"
+            style={styles.imageLoader}
+          />
         )}
         <Image
           source={{
-            uri: purchase.items[0]?.item?.file_image || "https://via.placeholder.com/150",
+            uri:
+              purchase.items[0]?.item?.file_image ||
+              "https://via.placeholder.com/150",
           }}
           style={styles.purchaseImage}
           onLoad={() => setImageLoaded(true)}
         />
       </View>
       <View style={styles.purchaseInfo}>
-        <Text style={styles.purchaseTitle}>{purchase.items[0]?.item?.name}</Text>
+        <Text style={styles.purchaseTitle}>
+          {purchase.items[0]?.item?.name}
+        </Text>
         <Text style={styles.purchaseDescription}>
           {purchase.items[0]?.item?.description || "Описание отсутствует"}
         </Text>
@@ -119,7 +128,9 @@ const PurchaseHistory = () => {
   }, []);
 
   if (isLoading) {
-    return <ActivityIndicator size="large" color="#260094" style={styles.loading} />;
+    return (
+      <ActivityIndicator size="large" color="#260094" style={styles.loading} />
+    );
   }
 
   if (purchases.length === 0) {
@@ -131,14 +142,16 @@ const PurchaseHistory = () => {
   }
 
   return (
-    <FlatList
-      data={purchases}
-      renderItem={({ item }) => (
-        <PurchaseItem purchase={item} onCancel={cancelPurchase} />
-      )}
-      keyExtractor={(item) => item.id.toString()}
-      contentContainerStyle={styles.listContainer}
-    />
+    <SafeAreaView>
+      <FlatList
+        data={purchases}
+        renderItem={({ item }) => (
+          <PurchaseItem purchase={item} onCancel={cancelPurchase} />
+        )}
+        keyExtractor={(item) => item.id.toString()}
+        contentContainerStyle={styles.listContainer}
+      />
+    </SafeAreaView>
   );
 };
 
