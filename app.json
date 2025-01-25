@@ -8,7 +8,7 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "Smg"
+      "bundleIdentifier": "com.kanagatkassymov.smgreactt"
     },
     "android": {
       "adaptiveIcon": {

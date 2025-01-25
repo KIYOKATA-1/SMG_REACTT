@@ -128,26 +128,6 @@ const DrawerNavigator = () => {
 />
 
 
-
-      <Drawer.Screen
-        name="Transactions"
-        component={TransactionsScreen}
-        options={{
-          drawerLabel: "Транзакции",
-          drawerIcon: ({ size, color }) => (
-            <FontAwesomeIcon
-              icon={faClockRotateLeft}
-              size={size}
-              color={color}
-            />
-          ),
-          drawerItemStyle: styles.drawerItem,
-          headerTintColor: "transparent",
-        }}
-        listeners={{
-          focus: () => handleSetActive("Transactions"),
-        }}
-      />
       <Drawer.Screen
         name="Edugress"
         component={EdugressScreen}
