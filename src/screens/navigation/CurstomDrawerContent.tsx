@@ -28,7 +28,6 @@ import IMAGES from "../../../assets/img/image";
 type RootStackParamList = {
   Login: undefined;
   Edugress: undefined;
-  Transactions: undefined;
   Profile: undefined;
   EduResults: undefined;
   RoadmapScreen: undefined;
@@ -102,30 +101,6 @@ export default function CustomDrawerContent(props: any) {
             ]}
           >
             Мой Кабинет
-          </Text>
-        </View>
-      </TouchableOpacity>
-      {/* Транзакции */}
-      <TouchableOpacity
-        style={[
-          styles.drawerItem,
-          activeMenu === "Transactions" && styles.activeDrawerItem,
-        ]}
-        onPress={() => handleMenuPress("Transactions", "Transactions")}
-      >
-        <View style={styles.drawerLabelContainer}>
-          <FontAwesomeIcon
-            icon={faClockRotateLeft}
-            size={20}
-            color={activeMenu === "Transactions" ? "#fff" : "#555"}
-          />
-          <Text
-            style={[
-              styles.drawerLabel,
-              { color: activeMenu === "Transactions" ? "#fff" : "#555" },
-            ]}
-          >
-            Транзакции
           </Text>
         </View>
       </TouchableOpacity>
