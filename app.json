@@ -4,7 +4,7 @@
     "slug": "SMG_REACTT",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/appstore.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
@@ -12,7 +12,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/appstore.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [],
