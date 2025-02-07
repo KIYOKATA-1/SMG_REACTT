@@ -27,7 +27,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>com.kassymovkanagat.mirumsmg</string>
+          <string>kz.devel.mirum</string>
         </array>
       </dict>
     </array>

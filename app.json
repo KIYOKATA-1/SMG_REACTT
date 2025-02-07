@@ -1,14 +1,15 @@
 {
   "expo": {
-    "name": "SMG_REACTT",
-    "slug": "SMG_REACTT",
-    "version": "1.0.0",
+    "name": "Mirum",
+    "slug": "mirum",
+    "version": "0.1.13",
     "orientation": "portrait",
     "icon": "./assets/appstore.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.kassymovkanagat.mirumsmg"
+      "bundleIdentifier": "kz.devel.mirum",
+      "buildNumber": "4"
     },
     "android": {
       "adaptiveIcon": {
@@ -16,7 +17,7 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": [],
-      "package": "com.kiyokata.SMG_REACTT"
+      "package": "kz.devel.mirum"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -26,8 +27,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "154a72e6-a9aa-4caf-9213-6d612005a387"
+        "projectId": "d3447bba-28fa-4b64-a904-42f7a8b777cc"
       }
-    }
+    },
+    "owner": "rakhmandev"
   }
 }

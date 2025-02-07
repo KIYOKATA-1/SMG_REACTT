@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
-  ScrollView, // Добавлен ScrollView
+  ScrollView,
   View,
   Text,
   StyleSheet,
@@ -11,8 +11,8 @@ import {
   Image,
   ActivityIndicator,
   TextInput,
-  Modal,
   Alert,
+  Modal,
 } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -40,62 +40,57 @@ const StorePage = () => {
   const [products, setProducts] = useState<StoreProduct[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<StoreProduct[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentImageIndex, setCurrentImageIndex] = useState<{
-    [key: number]: number;
-  }>({});
-  const [modalVisible, setModalVisible] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
-  const [modalImages, setModalImages] = useState<string[]>([]);
-  const [modalCurrentIndex, setModalCurrentIndex] = useState(0);
+
+  const [hitProducts, setHitProducts] = useState<StoreProduct[]>([]);
+  const [normalProducts, setNormalProducts] = useState<StoreProduct[]>([]);
 
   useEffect(() => {
-    const fetchSession = async () => {
+    (async () => {
       try {
         const userSession = await getSession();
         setSession(userSession);
-      } catch (error) {
-        console.error("Ошибка получения сессии:", error);
+      } catch {
         setSession(null);
       }
-    };
-    fetchSession();
+    })();
   }, [getSession]);
 
   useEffect(() => {
-    const clearCart = async () => {
+    (async () => {
       await AsyncStorage.removeItem("cart");
-    };
-    clearCart();
+    })();
   }, []);
+
   useEffect(() => {
-    const fetchCartItemCount = async () => {
+    (async () => {
       try {
         const jsonValue = await AsyncStorage.getItem("cart");
         const cart: CartProduct[] = jsonValue ? JSON.parse(jsonValue) : [];
         setCartItemCount(cart.reduce((sum, item) => sum + item.quantity, 0));
-      } catch (error) {
-        console.error("Ошибка при загрузке корзины:", error);
-      }
-    };
-    fetchCartItemCount();
+      } catch {}
+    })();
   }, []);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    (async () => {
       if (!session) return;
       setIsLoading(true);
       try {
         const response = await StoreService.getStoreProducts(session.key);
         setProducts(response.results);
         setFilteredProducts(response.results);
-      } catch (error) {
-        console.error("Ошибка загрузки продуктов:", error);
+      } catch {
       } finally {
         setIsLoading(false);
       }
-    };
-    fetchProducts();
+    })();
   }, [session]);
+
+  useEffect(() => {
+    setHitProducts(filteredProducts.filter((item) => item.is_hit));
+    setNormalProducts(filteredProducts.filter((item) => !item.is_hit));
+  }, [filteredProducts]);
 
   const handleSearch = useCallback(
     (text: string) => {
@@ -104,11 +99,9 @@ const StorePage = () => {
         setFilteredProducts(products);
         return;
       }
-
       const filtered = products.filter((product) =>
         product.name.toLowerCase().includes(text.toLowerCase())
       );
-
       setFilteredProducts(filtered);
     },
     [products]
@@ -118,8 +111,8 @@ const StorePage = () => {
     try {
       const jsonValue = await AsyncStorage.getItem("cart");
       const cart: CartProduct[] = jsonValue ? JSON.parse(jsonValue) : [];
-
       const existingItem = cart.find((item) => item.id === product.id);
+
       if (existingItem) {
         existingItem.quantity += 1;
       } else {
@@ -127,22 +120,29 @@ const StorePage = () => {
       }
 
       await AsyncStorage.setItem("cart", JSON.stringify(cart));
-
       setCartItemCount(cart.reduce((sum, item) => sum + item.quantity, 0));
-
       Alert.alert("Успех", "Товар добавлен в корзину!");
-    } catch (error) {
-      console.error("Ошибка добавления в корзину:", error);
+    } catch {
       Alert.alert("Ошибка", "Не удалось добавить товар в корзину.");
     }
   };
-
-  const ProductCard = ({ item, currentImageIndex, addToCart }: { 
-    item: StoreProduct; 
-    currentImageIndex: { [key: number]: number }; 
-    addToCart: (product: StoreProduct) => void; 
-  }) => {
-    const [isImageLoading, setImageLoading] = useState(true);
+  const ProductCard = ({ item }: { item: StoreProduct }) => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [isFullScreen, setIsFullScreen] = useState(false);
+  
+    const handleNextImage = () => {
+      if (item.file_image.length > 1) {
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % item.file_image.length);
+      }
+    };
+  
+    const handlePrevImage = () => {
+      if (item.file_image.length > 1) {
+        setCurrentIndex((prevIndex) =>
+          prevIndex === 0 ? item.file_image.length - 1 : prevIndex - 1
+        );
+      }
+    };
   
     return (
       <View style={styles.productCard}>
@@ -152,26 +152,33 @@ const StorePage = () => {
           </View>
         )}
         <View style={styles.imageContainer}>
-          {isImageLoading && (
-            <ActivityIndicator
-              size="large"
-              color="#260094"
-              style={styles.imageLoader}
-            />
-          )}
+          <TouchableOpacity onPress={handlePrevImage} style={styles.prevButton}>
+            <MaterialIcons name="chevron-left" size={24} color="white" />
+          </TouchableOpacity>
+  
+          <TouchableOpacity onPress={() => setIsFullScreen(true)} style={styles.zoomButton}>
+            <MaterialIcons name="zoom-in" size={24} color="white" />
+          </TouchableOpacity>
+  
           <Image
             source={{
-              uri:
-                item.file_image[currentImageIndex[item.id]] ||
-                "https://via.placeholder.com/150",
+              uri: item.file_image[currentIndex] || "https://via.placeholder.com/150",
             }}
-            style={[styles.productImage, isImageLoading && { display: "none" }]}
-            onLoad={() => setImageLoading(false)}
-            onError={() => setImageLoading(false)} // В случае ошибки тоже скрываем лоадер
+            style={styles.productImage}
           />
+  
+          <TouchableOpacity onPress={handleNextImage} style={styles.nextButton}>
+            <MaterialIcons name="chevron-right" size={24} color="white" />
+          </TouchableOpacity>
         </View>
         <Text style={styles.productName}>{item.name}</Text>
-        <Text style={styles.productDescription}>{item.description}</Text>
+        <Text
+          style={styles.productDescription}
+          numberOfLines={3}
+          ellipsizeMode="tail"
+        >
+          {item.description}
+        </Text>
         <Text style={styles.productPrice}>{item.price} EdCoins</Text>
         <TouchableOpacity
           style={styles.addToCartButton}
@@ -179,10 +186,29 @@ const StorePage = () => {
         >
           <Text style={styles.addToCartText}>Добавить в корзину</Text>
         </TouchableOpacity>
+  
+        {isFullScreen && (
+          <Modal visible={isFullScreen} transparent={true}>
+            <View style={styles.fullScreenContainer}>
+              <TouchableOpacity onPress={handlePrevImage} style={styles.prevButton}>
+                <MaterialIcons name="chevron-left" size={30} color="white" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleNextImage} style={styles.nextButton}>
+                <MaterialIcons name="chevron-right" size={30} color="white" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setIsFullScreen(false)} style={styles.closeButton}>
+                <MaterialIcons name="close" size={30} color="white" />
+              </TouchableOpacity>
+              <Image
+                source={{ uri: item.file_image[currentIndex] }}
+                style={styles.fullScreenImage}
+              />
+            </View>
+          </Modal>
+        )}
       </View>
     );
   };
-  
 
   return (
     <SafeAreaView style={styles.safeContainer}>
@@ -198,9 +224,7 @@ const StorePage = () => {
                 <Text style={styles.cartBadgeText}>{cartItemCount}</Text>
               </View>
             )}
-            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
-              Корзина
-            </Text>
+            <Text style={styles.buttonText}>Корзина</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -208,19 +232,16 @@ const StorePage = () => {
             onPress={() => navigation.navigate("History")}
           >
             <MaterialCommunityIcons name="history" size={26} color="white" />
-            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
-              История
-            </Text>
+            <Text style={styles.buttonText}>История</Text>
           </TouchableOpacity>
           <View style={styles.balance}>
-            <Text style={{ color: "#FFFFFFA6", fontSize: 14, fontWeight: "500" }}>
-              Ваш Баланс
-            </Text>
-            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+            <Text style={styles.balanceDesc}>Ваш Баланс</Text>
+            <Text style={styles.balanceText}>
               {session?.user.coins ?? "Загрузка..."} EdCoins
             </Text>
           </View>
         </View>
+
         <View style={styles.contentWrapper}>
           <ImageBackground
             source={IMAGES.STORE}
@@ -236,6 +257,7 @@ const StorePage = () => {
               </Text>
             </View>
           </ImageBackground>
+
           <View style={styles.searchBar}>
             <TextInput
               placeholder="Поиск товара"
@@ -245,38 +267,124 @@ const StorePage = () => {
             />
             <FontAwesome name="search" size={24} color="white" />
           </View>
-          {isLoading ? (
-            <ActivityIndicator size="large" color="#0000ff" />
-          ) : (
-<FlatList
-  data={filteredProducts}
-  renderItem={({ item }) => (
-    <ProductCard
-      item={item}
-      currentImageIndex={currentImageIndex}
-      addToCart={addToCart}
-    />
-  )}
-  keyExtractor={(item) => item.id.toString()}
-  contentContainerStyle={styles.productList}
-  horizontal={true}
-/>
 
-          )}
+          <Text style={styles.sectionTitle}>Хиты Продаж!</Text>
+          <FlatList
+            horizontal
+            data={hitProducts}
+            renderItem={({ item }) => <ProductCard item={item} />}
+            keyExtractor={(item) => item.id.toString()}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 16 }}
+          />
+
+          <Text style={styles.sectionTitle}>Товары</Text>
+          <FlatList
+            horizontal
+            data={normalProducts}
+            renderItem={({ item }) => <ProductCard item={item} />}
+            keyExtractor={(item) => item.id.toString()}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 16 }}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
+export default StorePage;
+
 const styles = StyleSheet.create({
   safeContainer: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#fff",
   },
   contentWrapper: {
     flex: 1,
     paddingHorizontal: 16,
+  },
+  productCard: {
+    width: 180,
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    padding: 12,
+    marginHorizontal: 8,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  imageContainer: {
+    width: "100%",
+    height: 120,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  productImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "contain",
+    borderRadius: 8,
+  },
+  productName: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#333",
+    textAlign: "center",
+    marginBottom: 6,
+  },
+  productDescription: {
+    fontSize: 12,
+    color: "#666",
+    lineHeight: 16,
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  productPrice: {
+    fontSize: 14,
+    color: "#260094",
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  addToCartButton: {
+    backgroundColor: "#260094",
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    alignItems: "center",
+  },
+  addToCartText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  hitTag: {
+    position: "absolute",
+    top: 10,
+    left: 8,
+    backgroundColor: "#F2277E",
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 5,
+    zIndex: 1,
+  },
+  hitTagText: {
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: "bold",
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginLeft: 16,
+    marginVertical: 10,
+    color: "#333",
   },
   background: {
     width: "100%",
@@ -313,41 +421,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
     lineHeight: 20,
   },
-  topBtns: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    elevation: 2,
-  },
-  button: {
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    backgroundColor: "#260094",
-    height: 60,
-    minWidth: 80,
-  },
-  balance: {
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    backgroundColor: "#260094",
-    height: 60,
-  },
   searchBar: {
     margin: 16,
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderWidth: 1,
-    display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -369,85 +447,6 @@ const styles = StyleSheet.create({
     padding: 10,
     color: "#333",
   },
-  productList: {
-    padding: 16,
-  },
-
-  navigationButtons: {
-    position: "absolute",
-    width: "100%",
-    top: "50%",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 10,
-  },
-  navButton: {
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    padding: 10,
-    borderRadius: 50,
-  },
-  navButtonText: {
-    color: "white",
-    fontSize: 18,
-  },
-
-  zoomButton: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
-    padding: 6,
-    borderRadius: 8,
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalImage: {
-    width: "90%",
-    height: "70%",
-    resizeMode: "contain",
-  },
-  modalNavigation: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    paddingHorizontal: 20,
-    marginTop: 20,
-  },
-  modalCloseButton: {
-    marginTop: 20,
-    backgroundColor: "#260094",
-    padding: 10,
-    borderRadius: 8,
-  },
-  modalCloseText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  horizontalProductList: {
-    paddingVertical: 16,
-    paddingHorizontal: 8,
-  },
-  hitTag: {
-    position: "absolute",
-    top: 25,
-    left: -5,
-    backgroundColor: "#F2277E",
-    paddingVertical: 3,
-    paddingHorizontal: 9,
-    transform: [{ rotate: "-30deg" }],
-    zIndex: 1,
-    borderRadius: 5,
-  },
-  hitTagText: {
-    color: "white",
-    fontSize: 12,
-    fontWeight: "bold",
-  },
   cartBadge: {
     position: "absolute",
     top: -5,
@@ -464,76 +463,101 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "bold",
   },
-  productCard: {
-    width: 220, // Фиксированная ширина карточки
-    height: 320, // Фиксированная высота карточки
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    padding: 16,
-    marginRight: 16,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    justifyContent: "space-between", // Равномерное распределение элементов
+  topBtns: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    elevation: 2,
   },
-  imageContainer: {
+  button: {
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: "#260094",
+    height: 60,
+    minWidth: 80,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  balance: {
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: "#260094",
+    height: 60,
+  },
+  balanceDesc: {
+    color: "#FFFFFFA6",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  balanceText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  skeletonLoader: {
     width: "100%",
-    height: 150, // Фиксированная высота изображения
+    height: "100%",
+    backgroundColor: "#E0E0E0", // Серый фон для скелетона
+    borderRadius: 8,
+    position: "absolute",
+    top: 0,
+    left: 0,
+  },
+  prevButton: {
+    position: "absolute",
+    left: 5,
+    top: "50%",
+    zIndex: 10,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 20,
+    padding: 5,
+  },
+  nextButton: {
+    position: "absolute",
+    right: 5,
+    top: "50%",
+    zIndex: 10,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 20,
+    padding: 5,
+  },
+  zoomButton: {
+    position: "absolute",
+    right: 10,
+    top: 10,
+    zIndex: 10,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 20,
+    padding: 5,
+  },
+  fullScreenContainer: {
+    flex: 1,
+    backgroundColor: "black",
     justifyContent: "center",
     alignItems: "center",
   },
-  imageLoader: {
+  closeButton: {
     position: "absolute",
-    alignSelf: "center",
-    justifyContent: "center",
-    width: "100%",
-    height: "100%",
+    top: 40,
+    right: 20,
+    zIndex: 10,
   },
-  productImage: {
+  fullScreenImage: {
     width: "100%",
     height: "100%",
     resizeMode: "contain",
-    borderRadius: 12,
-    backgroundColor: "#f0f0f0",
-  },
-  productName: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
-    textAlign: "center", // Центрирование названия
-    marginBottom: 4,
-  },
-  productDescription: {
-    fontSize: 14,
-    color: "#666",
-    lineHeight: 18,
-    textAlign: "center", // Центрирование описания
-    marginBottom: 10,
-  },
-  productPrice: {
-    fontSize: 16,
-    color: "#260094",
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 8,
-  },
-  addToCartButton: {
-    backgroundColor: "#260094",
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  addToCartText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "bold",
   },
 });
-
-export default StorePage;
